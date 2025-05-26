@@ -51,12 +51,14 @@ const Login = () => {
       const success = await login(email, password);
       console.log("Login result:", success);
       if (success) {
-        // Check role and redirect accordingly
         const role = authState?.role;
-        if (role === 'relawan') {
-          router.replace("/(tabs)/subcribeTopic");
-        } else {
-          router.replace("/(tabs)");
+        const is_subcribed = authState?.choose_topic;
+        if (role === 'relawan' && !is_subcribed) {
+          router.replace("/subcribeTopic");
+        } else if(role === 'relawan' && is_subcribed) {
+          router.replace("/(tabs)/relawan");
+        } else if(role === 'organisasi') {
+          router.replace("/(tabs)/organisasi");
         }
       }
     } catch (err) {

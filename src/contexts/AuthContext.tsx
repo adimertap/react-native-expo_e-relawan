@@ -49,9 +49,10 @@ interface AuthProps {
   authState?: {
     token: string | null;
     user_id?: number;
-    name?: string | null;
+    nama?: string | null;
     email?: string | null;
     role?: string | null;
+    choose_topic?: string | null;
   };
   isAuthenticated: boolean;
   initialized: boolean;
@@ -82,17 +83,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     authenticated: boolean | null;
     initialized: boolean;
     user_id?: number;
-    name?: string | null;
+    nama?: string | null;
     email?: string | null;
     role?: string | null;
+    choose_topic?: string | null;
   }>({
     token: null,
     authenticated: null,
     initialized: false,
-    name: null,
+    nama: null,
     user_id: 0,
     email: null,
     role: null,
+    choose_topic: null,
   });
   const { login: loginApi, logout: logoutApi, loading, error } = useAuth();
 
@@ -108,9 +111,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             authenticated: true,
             initialized: true,
             user_id: (decoded as any)?.user_id,
-            name: (decoded as any)?.name,
+            nama: (decoded as any)?.nama,
             email: (decoded as any)?.email,
             role: (decoded as any)?.role,
+            choose_topic: (decoded as any)?.choose_topic,
           });
         } else {
           setAuthState(prev => ({
@@ -141,9 +145,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         authenticated: true,
         initialized: true,
         user_id: (decoded as any)?.user_id,
-        name: (decoded as any)?.name,
+        nama: (decoded as any)?.nama,
         email: (decoded as any)?.email,
         role: (decoded as any)?.role,
+        choose_topic: (decoded as any)?.choose_topic,
       });
       try {
         await Storage.setItem(TOKEN_KEY, response.token);
@@ -166,9 +171,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       authenticated: false,
       initialized: true,
       user_id: 0,
-      name: null,
+      nama: null,
       email: null,
       role: null,
+      choose_topic: null,
     });
     logoutApi();
   };
