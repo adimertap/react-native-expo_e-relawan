@@ -173,7 +173,6 @@ export default function DetailKegiatanScreen() {
             </TouchableOpacity>
           </View>
         </View>
-
         <View style={tw`mt-10`}>
           <Text style={tw`text-black text-lg font-medium`}>{namaKegiatan}</Text>
           <Text style={tw`text-gray-500 text-sm mt-1`}>
@@ -181,7 +180,6 @@ export default function DetailKegiatanScreen() {
           </Text>
         </View>
         <View style={tw`h-0.5 bg-gray-200 mt-5 mb-2`} />
-
         <ScrollView
           style={tw`mb-20`}
           showsVerticalScrollIndicator={false}
@@ -190,7 +188,7 @@ export default function DetailKegiatanScreen() {
             <RefreshControl
               refreshing={loadingDetailKegiatan}
               onRefresh={() => {}}
-              colors={["#2563eb"]} // blue-600 color
+              colors={["#2563eb"]} 
               tintColor="#2563eb"
             />
           }>
