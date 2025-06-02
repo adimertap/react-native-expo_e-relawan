@@ -1,12 +1,14 @@
 import { useAuthContext } from "@/src/contexts/AuthContext";
 import { useDeleteKegiatan } from "@/src/hooks/Organisasi/useDeleteKegiatan";
 import { useFetchDetailKegiatan } from "@/src/hooks/Organisasi/useFetchDetailKegiatan";
-import { useFetchKegiatanSelf } from "@/src/hooks/Organisasi/useFetchKegiatanSelf";
+import { useVerifikasiKegiatan } from "@/src/hooks/Organisasi/useVerifikasiKegiatan";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
   Alert,
+  Modal,
+  Pressable,
   RefreshControl,
   ScrollView,
   Text,
@@ -23,6 +25,7 @@ export default function DetailKegiatanScreen() {
 
   const {
     detailKegiatan,
+    refetch: refetchKegiatan,
     loading: loadingDetailKegiatan,
     error: errorDetailKegiatan
   } = useFetchDetailKegiatan(Number(id));
@@ -31,6 +34,11 @@ export default function DetailKegiatanScreen() {
     loading: loadingDeleteKegiatan,
     error: errorDeleteKegiatan
   } = useDeleteKegiatan();
+  const {
+    verifikasiKegiatan,
+    loading: loadingVerifikasiKegiatan,
+    error: errorVerifikasiKegiatan
+  } = useVerifikasiKegiatan();
   const [namaKegiatan, setNamaKegiatan] = useState<string>("");
   const [topic, setTopic] = useState<string>("");
   const [jenisKegiatan, setJenisKegiatan] = useState<string>("");
@@ -43,11 +51,13 @@ export default function DetailKegiatanScreen() {
   const [tugasRelawan, setTugasRelawan] = useState<string>("");
   const [kriteriaRelawan, setKriteriaRelawan] = useState<string>("");
   const [deskripsiKegiatan, setDeskripsiKegiatan] = useState<string>("");
+  const [isPertanyaan, setIsPertanyaan] = useState<string>("");
   const [image, setImage] = useState<string>("");
   const [kabupaten, setKabupaten] = useState<string>("");
   const [provinsi, setProvinsi] = useState<string>("");
   const [status, setStatus] = useState<string>("");
-  const { refetch: refetchKegiatan } = useFetchKegiatanSelf();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedSubs, setSelectedSubs] = useState<any>(null);
 
   useEffect(() => {
     if (detailKegiatan) {
@@ -63,6 +73,7 @@ export default function DetailKegiatanScreen() {
       setTugasRelawan(detailKegiatan.tugas_relawan || "");
       setKriteriaRelawan(detailKegiatan.kriteria_relawan || "");
       setDeskripsiKegiatan(detailKegiatan.deskripsi_kegiatan || "");
+      setIsPertanyaan(detailKegiatan.perlu_pertanyaan || "");
       setImage(detailKegiatan.image || "");
       setKabupaten(detailKegiatan.kabupaten?.kabupaten || "");
       setProvinsi(detailKegiatan.provinsi?.provinsi || "");
@@ -89,7 +100,7 @@ export default function DetailKegiatanScreen() {
             text: "Hapus",
             onPress: async () => {
               await deleteKegiatan(Number(id));
-              await refetchKegiatan();
+              await refetchKegiatan(Number(id));
               router.replace("/organisasi");
             }
           }
@@ -102,7 +113,31 @@ export default function DetailKegiatanScreen() {
 
   const handleVerifikasi = async (subs_kegiatan_id: number) => {
     try {
-      // await verifikasiKegiatan(subs_kegiatan_id);
+      const subs = detailKegiatan?.subs_kegiatan?.find(
+        (s) => s.subs_kegiatan_id === subs_kegiatan_id
+      );
+      if (isPertanyaan === "Y") {
+        setSelectedSubs(subs);
+        setModalVisible(true);
+      } else {
+        await verifikasiKegiatan(Number(id), subs?.user_id || 0);
+        Alert.alert("Berhasil", "Relawan berhasil diverifikasi");
+        await refetchKegiatan(Number(id));
+        setModalVisible(false);
+        setSelectedSubs(null);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleConfirmVerifikasi = async () => {
+    try {
+      await verifikasiKegiatan(Number(id), selectedSubs?.user_id || 0);
+      Alert.alert("Berhasil", "Relawan berhasil diverifikasi");
+      await refetchKegiatan(Number(id));
+      setModalVisible(false);
+      setSelectedSubs(null);
     } catch (error) {
       console.log(error);
     }
@@ -147,33 +182,37 @@ export default function DetailKegiatanScreen() {
             {status === "Cancelled" && "Dibatalkan oleh Admin"}
           </Text>
           <View style={tw`flex-row items-center justify-end `}>
-            <TouchableOpacity
-              style={tw`bg-blue-500 py-2 px-5 rounded-full flex-row items-center justify-center ${
-                loadingDetailKegiatan ? "opacity-50" : ""
-              }`}
-              onPress={() =>
-                router.push({
-                  pathname: "/organisasi/kegiatan/tambah",
-                  params: {
-                    isEdit: "true",
-                    data: JSON.stringify(detailKegiatan)
+            {status === "Draft" && (
+              <>
+                <TouchableOpacity
+                  style={tw`bg-blue-500 py-2 px-5 rounded-full flex-row items-center justify-center ${
+                    loadingDetailKegiatan ? "opacity-50" : ""
+                  }`}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/organisasi/kegiatan/tambah",
+                      params: {
+                        isEdit: "true",
+                        data: JSON.stringify(detailKegiatan)
+                      }
+                    })
                   }
-                })
-              }
-              disabled={loadingDetailKegiatan}>
-              <Ionicons name="pencil-outline" size={18} color="white" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={tw`bg-red-500 py-2 px-5 ml-5 rounded-full flex-row items-center justify-center ${
-                loadingDetailKegiatan ? "opacity-50" : ""
-              }`}
-              onPress={handleDeleteKegiatan}
-              disabled={loadingDetailKegiatan}>
-              <Ionicons name="trash-outline" size={18} color="white" />
-            </TouchableOpacity>
+                  disabled={loadingDetailKegiatan}>
+                  <Ionicons name="pencil-outline" size={18} color="white" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={tw`bg-red-500 py-2 px-5 ml-5 rounded-full flex-row items-center justify-center ${
+                    loadingDetailKegiatan ? "opacity-50" : ""
+                  }`}
+                  onPress={handleDeleteKegiatan}
+                  disabled={loadingDetailKegiatan}>
+                  <Ionicons name="trash-outline" size={18} color="white" />
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         </View>
-        <View style={tw`mt-10`}>
+        <View style={tw`mt-7`}>
           <Text style={tw`text-black text-lg font-medium`}>{namaKegiatan}</Text>
           <Text style={tw`text-gray-500 text-sm mt-1`}>
             Topic: {topic}, Event: {jenisKegiatan}
@@ -188,7 +227,7 @@ export default function DetailKegiatanScreen() {
             <RefreshControl
               refreshing={loadingDetailKegiatan}
               onRefresh={() => {}}
-              colors={["#2563eb"]} 
+              colors={["#2563eb"]}
               tintColor="#2563eb"
             />
           }>
@@ -237,42 +276,103 @@ export default function DetailKegiatanScreen() {
             Tugas {tugasRelawan}
           </Text>
           <View style={tw`h-0.5 bg-gray-200 mt-3 mb-2`} />
-          {status === "Draft" && (
-            <>
-              <View style={tw`mt-3 justify-between flex-row items-center`}>
-                <Text style={tw`text-black text-sm italic mt-3`}>
-                  List Relawan
-                </Text>
-                <Text style={tw`text-gray-500 text-sm italic`}>
-                  Total: {detailKegiatan?.subs_kegiatan?.length} Relawan
-                </Text>
+          <>
+            <View style={tw`mt-3 justify-between flex-row items-center`}>
+              <Text style={tw`text-black text-sm italic mt-3`}>
+                List Relawan
+              </Text>
+              <Text style={tw`text-gray-500 text-sm italic`}>
+                Total: {detailKegiatan?.subs_kegiatan?.length} Relawan
+              </Text>
+            </View>
+            {detailKegiatan?.subs_kegiatan?.map((subs) => (
+              <View
+                key={subs.subs_kegiatan_id}
+                style={tw`flex-row items-center justify-between bg-gray-200 p-2 py-2 rounded-md mt-3`}>
+                <Text style={tw`text-gray-600 text-sm`}>{subs.user?.nama}</Text>
+                {subs.is_verified === "Y" ? (
+                  <Text style={tw`text-blue-500 italic text-sm`}>Diterima</Text>
+                ) : (
+                  <>
+                    {status === "Verified" && (
+                      <TouchableOpacity
+                        style={tw`bg-blue-500 px-3 py-1 rounded-md`}
+                        onPress={() =>
+                          handleVerifikasi(subs.subs_kegiatan_id || 0)
+                        }>
+                        <Text style={tw`text-white text-xs`}>Verifikasi</Text>
+                      </TouchableOpacity>
+                    )}
+                  </>
+                )}
               </View>
-              {detailKegiatan?.subs_kegiatan?.map((subs) => (
-                <View
-                  key={subs.subs_kegiatan_id}
-                  style={tw`flex-row items-center justify-between bg-gray-200 p-2 py-2 rounded-md mt-3`}>
-                  <Text style={tw`text-gray-600 text-xs`}>
-                    {subs.user?.nama}
-                  </Text>
-                  {subs.is_verified === "Y" ? (
-                    <Text style={tw`text-green-500 text-xs`}>
-                      Terverifikasi
-                    </Text>
-                  ) : (
-                    <TouchableOpacity
-                      style={tw`bg-blue-400 px-3 py-1 rounded-md`}
-                      onPress={() =>
-                        handleVerifikasi(subs.subs_kegiatan_id || 0)
-                      }>
-                      <Text style={tw`text-white text-xs`}>Verifikasi</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              ))}
-            </>
-          )}
+            ))}
+          </>
         </ScrollView>
       </View>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(false);
+          setSelectedSubs(null);
+        }}>
+        <View style={tw`flex-1 justify-end rounded-t-3xl bg-black/50`}>
+          <View style={tw`bg-white rounded-t-3xl p-6 w-[100%] max-w-[400px]`}>
+            <View style={tw`flex-row items-center justify-between`}>
+              <Text style={tw`text-xl font-bold mb-1 text-center`}>
+                Verifikasi Relawan
+              </Text>
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <Ionicons name="close-outline" size={25} color="black" />
+              </TouchableOpacity>
+            </View>
+            <View style={tw`h-0.5 bg-gray-200 mt-1 mb-4`} />
+            {selectedSubs && (
+              <View style={tw`mb-20`}>
+                <Text style={tw`text-gray-700 mb-2`}>
+                  Nama: {selectedSubs.user?.nama}
+                </Text>
+                <Text style={tw`text-gray-700 mb-2`}>
+                  Email: {selectedSubs.user?.email}
+                </Text>
+                {isPertanyaan === "Y" && (
+                  <>
+                    <View>
+                      <Text style={tw`text-blue-600 mb-2 italic mt-3`}>
+                        {selectedSubs.about_me}
+                      </Text>
+                    </View>
+                    <View>
+                      <Text style={tw`text-blue-600 italic mb-2 mt-2`}>
+                        CV: {selectedSubs.user_cv}
+                      </Text>
+                    </View>
+                  </>
+                )}
+              </View>
+            )}
+
+            <View style={tw`flex-row justify-end gap-3 mt-2 mb-5`}>
+              <Pressable
+                style={tw`bg-gray-300 px-4 py-2 rounded-lg`}
+                onPress={() => {
+                  setModalVisible(false);
+                  setSelectedSubs(null);
+                }}>
+                <Text style={tw`text-gray-700`}>Batal</Text>
+              </Pressable>
+              <Pressable
+                style={tw`bg-blue-500 px-4 py-2 rounded-lg`}
+                onPress={handleConfirmVerifikasi}>
+                <Text style={tw`text-white font-bold`}>Verifikasi Relawan</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }

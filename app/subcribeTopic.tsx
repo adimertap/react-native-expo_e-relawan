@@ -4,7 +4,7 @@ import { useSubscribeTopic } from "@/src/hooks/Master/useSubscribeTopic";
 import { TopicType } from "@/src/types/types";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import tw from "twrnc";
 
 const SubcribeTopic = () => {
@@ -26,15 +26,15 @@ const SubcribeTopic = () => {
 
   const handleSubmit = async () => {
     if (selected.length < 3) return;
-    // Find topic_id for each selected topic_nama
     const selectedIds = topic
       .filter((t) => selected.includes(t.topic_nama || ""))
       .map((t) => t.topic_id!);
     try {
       await submitSubscribeTopic(selectedIds);
-      router.replace("/subcribeTopic");
+      router.replace("/(tabs)/relawan");
     } catch (e) {
-      // error handled by hook
+      console.log(e);
+      Alert.alert("Error", "Failed to subscribe topic");
     }
   };
 
@@ -53,7 +53,7 @@ const SubcribeTopic = () => {
         </TouchableOpacity>
         <TouchableOpacity
           style={tw`absolute top-4 right-6 cursor-pointer`}
-          onPress={() => router.replace("/(tabs)/relawan/explore")}>
+          onPress={() => router.replace("/(tabs)/relawan")}>
           <Text style={tw`text-gray-500 font-medium text-sm`}>Skip</Text>
         </TouchableOpacity>
       </View>

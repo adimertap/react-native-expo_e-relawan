@@ -1,34 +1,41 @@
-import { Tabs } from "expo-router";
-import React from "react";
-import { Platform } from "react-native";
+import { IconSymbol } from '@/components/ui/IconSymbol';
+import { Tabs } from 'expo-router';
+import React from 'react';
 
-import { HapticTab } from "@/components/HapticTab";
-import { IconSymbol } from "@/components/ui/IconSymbol";
-import TabBarBackground from "@/components/ui/TabBarBackground";
-
-export default function TabLayout() {
+export default function TabLayoutRelawan() {
   return (
     <Tabs
-      initialRouteName="index"
       screenOptions={{
-        tabBarActiveTintColor: "blue",
+        tabBarActiveTintColor: '#000',
+        tabBarInactiveTintColor: '#9ca3af', 
         headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            position: "absolute"
-          },
-          default: {}
-        })
+        tabBarShowLabel: true,
+        tabBarStyle: {
+          backgroundColor: '#fff',
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
+          height: 85,
+          paddingTop: 10,
+          position: 'absolute',
+          shadowColor: '#000',
+          shadowOpacity: 0.1,
+          shadowOffset: { width: 0, height: -2 },
+          shadowRadius: 10,
+          elevation: 10,
+        },
       }}>
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="house.fill" color={color} />
-          )
+          title: 'Home',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="history"
+        options={{
+          title: 'Riwayat',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="clock.fill" color={color} />,
         }}
       />
     </Tabs>

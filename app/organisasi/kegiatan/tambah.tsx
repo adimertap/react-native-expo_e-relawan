@@ -59,6 +59,7 @@ export default function AddKegiatanScreen() {
   const [deskripsiKegiatan, setDeskripsiKegiatan] = useState<string>("");
   const [image, setImage] = useState<string>("");
   const [base64Image, setBase64Image] = useState<string>("");
+  const [perluPertanyaan, setPerluPertanyaan] = useState<boolean>(false);
 
   const { submitKegiatan, loading: submitting } = useSubmitKegiatan();
   const { updateKegiatan, loading: updating } = useUpdateKegiatan();
@@ -89,6 +90,7 @@ export default function AddKegiatanScreen() {
       setDeskripsiKegiatan(editData.deskripsi_kegiatan || "");
       setImage(editData.photo || "");
       setBase64Image(editData.photo || "");
+      setPerluPertanyaan(editData.perlu_pertanyaan || false);
     }
   }, []); // Empty dependency array to run only once
 
@@ -179,7 +181,8 @@ export default function AddKegiatanScreen() {
       tugas_relawan: tugasRelawan,
       kriteria_relawan: kriteriaRelawan,
       deskripsi_kegiatan: deskripsiKegiatan,
-      photo: base64Image
+      photo: base64Image,
+      perlu_pertanyaan: perluPertanyaan
     };
 
     let result;
@@ -423,6 +426,32 @@ export default function AddKegiatanScreen() {
                 />
               </View>
             )}
+          </View>
+          {/* Radio Button */}
+          <View style={tw`w-full mb-3 mt-3`}>
+            <Text style={tw`text-gray-600 text-sm italic mb-2 ml-1`}>
+               Perlu Upload CV dan Pertanyaan?
+            </Text>
+            <View style={tw`flex-row items-center mt-2`}>
+              <TouchableOpacity 
+                style={tw`flex-row items-center mr-4`}
+                onPress={() => setPerluPertanyaan(true)}
+              >
+                <View style={tw`w-5 h-5 rounded-full border-2 border-gray-400 mr-2 items-center justify-center`}>
+                  {perluPertanyaan && <View style={tw`w-3 h-3 rounded-full bg-blue-600`} />}
+                </View>
+                <Text style={tw`text-gray-700`}>Ya</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={tw`flex-row items-center`}
+                onPress={() => setPerluPertanyaan(false)}
+              >
+                <View style={tw`w-5 h-5 rounded-full border-2 border-gray-400 mr-2 items-center justify-center`}>
+                  {!perluPertanyaan && <View style={tw`w-3 h-3 rounded-full bg-blue-600`} />}
+                </View>
+                <Text style={tw`text-gray-700`}>Tidak</Text>
+              </TouchableOpacity>
+            </View>
           </View>
           <View style={tw`w-full mb-15 mt-5`}>
             <TouchableOpacity 

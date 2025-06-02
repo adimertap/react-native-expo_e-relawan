@@ -90,6 +90,7 @@ export interface KegiatanType {
   updated_at?: string;
   user?: UserType;
   topic?: TopicType;
+  perlu_pertanyaan?: string;
   jenis_kegiatan?: JenisKegiatanType;
   provinsi?: ProvinsiType;
   kabupaten?: KabupatenType;
@@ -104,6 +105,8 @@ export interface SubsKegiatanType {
   status_kegiatan?: string;
   is_verified?: string;
   verified_at?: string;
+  about_me?: string;
+  user_cv?: string;
   user?: UserType;
   kegiatan?: KegiatanType;
 }

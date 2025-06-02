@@ -1,22 +1,21 @@
 import { useAuthContext } from "@/src/contexts/AuthContext";
 import { useFetchTopic } from "@/src/hooks/Master/useFetchTopic";
-import { useFetchKegiatanRelawan } from "@/src/hooks/Relawan/useFetchKegiatanRelawan";
-import { KegiatanType, TopicType } from "@/src/types/types";
+import { useFetchApplyKegiatan } from "@/src/hooks/Relawan/useFetchApplyKegiatan";
+import { SubsKegiatanType, TopicType } from "@/src/types/types";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  Image,
-  RefreshControl,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    Image,
+    RefreshControl,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View
 } from "react-native";
 import tw from "twrnc";
 
-export default function HomeRelawanScreen() {
+export default function HistoryRelawanScreen() {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [refreshing, setRefreshing] = useState(false);
@@ -25,28 +24,27 @@ export default function HomeRelawanScreen() {
   const [topicList, setTopicList] = useState<TopicType[]>([]);
   const { topic, loading: loadingTopic, error: errorTopic } = useFetchTopic();
   const {
-    kegiatan,
-    loading: loadingKegiatan,
-    error: errorKegiatan,
-    refetch: refetchKegiatan
-  } = useFetchKegiatanRelawan({
-    search: search,
+    applyKegiatan,
+    loading: loadingApplyKegiatan,
+    error: errorApplyKegiatan,
+    refetch: refetchApplyKegiatan
+  } = useFetchApplyKegiatan({
     topic_id: selectedTopicId || undefined
   });
-  const [kegiatanList, setKegiatanList] = useState<KegiatanType[]>([]);
+  const [applyKegiatanList, setApplyKegiatanList] = useState<SubsKegiatanType[]>([]);
 
   useEffect(() => {
     if (topic) {
       setTopicList(topic);
     }
-    if (kegiatan) {
-      setKegiatanList(kegiatan);
+    if (applyKegiatan) {
+      setApplyKegiatanList(applyKegiatan);
     }
-  }, [topic, kegiatan]);
+  }, [topic, applyKegiatan]);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await refetchKegiatan();
+    await refetchApplyKegiatan();
     setRefreshing(false);
   };
 
@@ -91,20 +89,6 @@ export default function HomeRelawanScreen() {
       </View>
 
       <View style={tw`px-5`}>
-        <View style={tw`flex-row items-center justify-between`}>
-          <TextInput
-            style={tw`text-black bg-white py-3 px-4 rounded-full w-3/4 border border-gray-100`}
-            placeholder="Cari Kegiatan yang akan Anda Ikuti"
-            placeholderTextColor="gray"
-            autoCapitalize="none"
-            value={search}
-            onChangeText={setSearch}
-          />
-          <View style={tw`flex-row items-center w-1/4 justify-center`}>
-            <Ionicons name="filter-outline" size={25} color="black" />
-            <Text style={tw`text-black text-xs font-medium ml-2`}>Filter</Text>
-          </View>
-        </View>
         <ScrollView horizontal style={tw`mt-4 py-1`} showsHorizontalScrollIndicator={false}>
           <TouchableOpacity
             onPress={() => handleTopicSelect(null)}
@@ -139,17 +123,11 @@ export default function HomeRelawanScreen() {
       </View>
       <View style={tw`flex-row items-center justify-between px-5 mt-5`}>
         <Text style={tw`text-black text-sm font-medium ml-1`}>
-          {kegiatanList.length} Kegiatan
+            History Kegiatan Anda
         </Text>
-        <View style={tw`flex-row items-center ml-4 mr-6`}>
+        <View style={tw`flex-row items-center ml-4 mr-2`}>
           <View style={tw`w-1/2 h-0.5 bg-gray-200`} />
-          <View style={tw`w-1/4 h-0.5 bg-gray-200 mr-5`} />
-          <Ionicons
-            name="checkmark-circle-outline"
-            size={22}
-            color="gray"
-            style={tw`mr-2`}
-          />
+          <View style={tw`w-1/4 h-0.5 bg-gray-200 mr-1`} />
         </View>
       </View>
       <ScrollView 
@@ -165,79 +143,56 @@ export default function HomeRelawanScreen() {
           />
         }
       >
-        {kegiatanList.map((kegiatan) => (
+        {applyKegiatanList.map((applyKegiatan) => (
           <TouchableOpacity
-            key={kegiatan.kegiatan_id}
+            key={applyKegiatan.subs_kegiatan_id}
             onPress={() => router.push({
-              pathname: "/relawan/kegiatan/detail",
-              params: { id: kegiatan.kegiatan_id }
+              pathname: "/relawan/kegiatan/detailApply",
+              params: { id: applyKegiatan.kegiatan_id }
             })}
             style={tw`bg-white border border-gray-200 shadow-md rounded-3xl px-3 py-3 mb-6 border border-gray-100`}>
             <View
-              key={kegiatan.kegiatan_id}
+              key={applyKegiatan.subs_kegiatan_id}
               style={tw`bg-white px-2 py-2 mr-2`}>
               <View style={tw`flex-row items-center mb-3`}>
                 <View style={tw`bg-blue-400 rounded-md px-2 py-1`}>
                   <Text style={tw`text-white text-xs`}>
-                    {kegiatan.topic?.topic_nama}
+                    {applyKegiatan.kegiatan?.topic?.topic_nama}
                   </Text>
                 </View>
                 <View style={tw`bg-blue-400 rounded-md px-2 py-1 ml-3`}>
                   <Text style={tw`text-white text-xs`}>
-                    {kegiatan.jenis_kegiatan?.jenis_kegiatan}
+                    {applyKegiatan.kegiatan?.jenis_kegiatan?.jenis_kegiatan}
                   </Text>
                 </View>
               </View>
               <View style={tw`flex-row items-center justify-between w-full`}>
                 <View style={tw`flex-col`}>
                   <Text style={tw`text-black text-sm font-medium`}>
-                    {kegiatan.nama_kegiatan}
+                    {applyKegiatan.kegiatan?.nama_kegiatan}
                   </Text>
                   <Text style={tw`text-gray-500 text-sm`}>
-                    Tanggal: {formatDate(kegiatan.start_date || "")}
+                    Tanggal: {formatDate(applyKegiatan.kegiatan?.start_date || "")}
                   </Text>
                 </View>
-                <View style={tw`ml-2`}>
-                  {kegiatan.status === "Draft" && (
-                    <Text
-                      style={tw`bg-red-500 text-white text-xs px-2 py-1 rounded-2xl`}>
-                      Draft
+               
+              </View>
+              <View style={tw`h-0.5 bg-white mt-1 mb-1`} />
+              <Text style={tw`text-gray-500 text-sm`}>
+                Lokasi: {applyKegiatan.kegiatan?.location}
+              </Text>
+              <View style={tw`mt-1`}>
+                  {applyKegiatan.is_verified === "N" && (
+                    <Text style={tw`text-red-500 text-xs italic`}>
+                      Menunggu Verifikasi
                     </Text>
                   )}
-                  {kegiatan.status === "Verified" && (
-                    <Text
-                      style={tw`bg-blue-500 text-white text-xs px-2 py-1 rounded-2xl`}>
-                      Aktif
-                    </Text>
-                  )}
-                  {kegiatan.status === "Run" && (
-                    <Text
-                      style={tw`bg-blue-500 text-white text-xs px-2 py-1 rounded-2xl`}>
-                      Berjalan
-                    </Text>
-                  )}
-                  {kegiatan.status === "Completed" && (
-                    <Text
-                      style={tw`bg-green-500 text-white text-xs px-2 py-1 rounded-2xl`}>
-                      Selesai
+                  {applyKegiatan.is_verified === "Y" && (
+                    <Text style={tw`text-blue-500 text-xs italic`}>
+                      Diterima
                     </Text>
                   )}
                 </View>
-              </View>
-              <View style={tw`h-0.5 bg-white mt-2 mb-2`} />
-              <Text style={tw`text-gray-500 text-sm`}>
-                Lokasi: {kegiatan.location}
-              </Text>
-              <Text style={tw`text-blue-500 text-sm mt-1 italic`}>
-                Penyelenggara: {kegiatan.user?.nama}
-              </Text>
-              <View style={tw`flex-row items-center mt-2`}>
-                <Text style={tw`text-red-500 text-xs italic`}>
-                  {kegiatan.status === "Verified" && "Daftar Sekarang Juga!"}
-                  {kegiatan.status === "Run" && "Sedang Berjalan"}
-                  {kegiatan.status === "Completed" && "Selesai"}
-                </Text>
-              </View>
             </View>
           </TouchableOpacity>
         ))}

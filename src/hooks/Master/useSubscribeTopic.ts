@@ -8,7 +8,7 @@ export const useSubscribeTopic = () => {
   const [subscribeTopic, setSubscribeTopic] = useState<TopicType[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { authState } = useAuthContext();
+  const { authState, updateAuthState } = useAuthContext();
 
   const submitSubscribeTopic = async (topicIds: number[]) => {
     try {
@@ -27,6 +27,15 @@ export const useSubscribeTopic = () => {
       }
       const data = await response.json();
       setSubscribeTopic(data.data || []);
+      
+      // Update auth state to reflect that user has chosen topics
+      if (authState) {
+        updateAuthState({
+          ...authState,
+          choose_topic: 'Y'
+        });
+      }
+      
       return data;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');

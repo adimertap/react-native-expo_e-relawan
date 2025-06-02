@@ -60,6 +60,7 @@ interface AuthProps {
   logout: () => void;
   loading: boolean;
   error: string | null;
+  updateAuthState: (newState: AuthProps['authState']) => void;
 }
 
 const AuthContext = React.createContext<AuthProps>({
@@ -72,7 +73,10 @@ const AuthContext = React.createContext<AuthProps>({
     throw new Error('Function not implemented.');
   },
   loading: false,
-  error: null
+  error: null,
+  updateAuthState: function (newState: AuthProps['authState']): void {
+    throw new Error('Function not implemented.');
+  }
 });
 
 export const useAuthContext = () => useContext(AuthContext);
@@ -179,6 +183,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     logoutApi();
   };
 
+  const updateAuthState = (newState: AuthProps['authState']) => {
+    if (newState) {
+      console.log("Updating auth state:", {
+        previous: authState,
+        new: newState
+      });
+      setAuthState(prev => ({
+        ...prev,
+        ...newState,
+        authenticated: true,
+        initialized: true,
+      }));
+    }
+  };
+
   const value = {
     authState,
     isAuthenticated: authState.authenticated || false,
@@ -187,6 +206,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     logout: logout,
     loading: loading,
     error: error,
+    updateAuthState,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

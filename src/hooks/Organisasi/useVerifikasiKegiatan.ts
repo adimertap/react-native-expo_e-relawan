@@ -3,41 +3,17 @@ import { useAuthContext } from '@/src/contexts/AuthContext';
 import axios from 'axios';
 import { useState } from 'react';
 
-interface KegiatanData {
-  nama_kegiatan: string;
-  topic_id: number;
-  jenis_kegiatan_id: number;
-  start_date: string;
-  end_date: string;
-  location: string;
-  relawan_dibutuhkan: string;
-  total_jam_kerja: string;
-  tugas_relawan: string;
-  kriteria_relawan: string;
-  deskripsi_kegiatan: string;
-  photo?: string;
-  perlu_pertanyaan?: boolean;
-}
-
-export const useSubmitKegiatan = () => {
+export const useVerifikasiKegiatan = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { authState } = useAuthContext();
 
-  const submitKegiatan = async (data: KegiatanData) => {
+  const verifikasiKegiatan = async (kegiatan_id: number, user_id: number) => {
     try {
       setLoading(true);
       setError(null);
 
-      // Validate required fields
-      if (!data.nama_kegiatan || !data.topic_id || !data.jenis_kegiatan_id || 
-          !data.start_date || !data.end_date || !data.location) {
-        throw new Error('Semua field wajib diisi');
-      }
-
-      const response = await axios.post(`${API_URL}/mobile/create/kegiatan`, {
-        ...data,
-        user_id: authState?.user_id,
+      const response = await axios.put(`${API_URL}/mobile/kegiatan/${kegiatan_id}/verifikasi/${user_id}`, {
       }, {
         headers: {
           Authorization: `Bearer ${authState?.token}`,
@@ -47,7 +23,7 @@ export const useSubmitKegiatan = () => {
       if (response.data.success) {
         return {
           success: true,
-          message: 'Kegiatan berhasil ditambahkan'
+          message: 'Kegiatan berhasil diverifikasi'
         };
       } else {
         throw new Error(response.data.message || 'Terjadi kesalahan');
@@ -65,7 +41,7 @@ export const useSubmitKegiatan = () => {
   };
 
   return {
-    submitKegiatan,
+    verifikasiKegiatan,
     loading,
     error,
   };
