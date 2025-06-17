@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "260088418676",
+    "project_id": "ca-wan",
+    "storage_bucket": "ca-wan.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:260088418676:android:fff538a53e44bd095c9c21",
+        "android_client_info": {
+          "package_name": "com.anonymous.mobilereact"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCS0N-TqUo13t43MQxJtfJktnOep43UEcI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

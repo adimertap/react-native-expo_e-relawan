@@ -7,8 +7,6 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
   Alert,
-  Modal,
-  Pressable,
   RefreshControl,
   ScrollView,
   Text,
@@ -16,6 +14,7 @@ import {
   View
 } from "react-native";
 import tw from "twrnc";
+import ModalApply from "./modal/modalApply";
 
 export default function DetailKegiatanScreen() {
   const { id } = useLocalSearchParams();
@@ -311,68 +310,14 @@ export default function DetailKegiatanScreen() {
         </ScrollView>
       </View>
 
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => {
-          setModalVisible(false);
-          setSelectedSubs(null);
-        }}>
-        <View style={tw`flex-1 justify-end rounded-t-3xl bg-black/50`}>
-          <View style={tw`bg-white rounded-t-3xl p-6 w-[100%] max-w-[400px]`}>
-            <View style={tw`flex-row items-center justify-between`}>
-              <Text style={tw`text-xl font-bold mb-1 text-center`}>
-                Verifikasi Relawan
-              </Text>
-              <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Ionicons name="close-outline" size={25} color="black" />
-              </TouchableOpacity>
-            </View>
-            <View style={tw`h-0.5 bg-gray-200 mt-1 mb-4`} />
-            {selectedSubs && (
-              <View style={tw`mb-20`}>
-                <Text style={tw`text-gray-700 mb-2`}>
-                  Nama: {selectedSubs.user?.nama}
-                </Text>
-                <Text style={tw`text-gray-700 mb-2`}>
-                  Email: {selectedSubs.user?.email}
-                </Text>
-                {isPertanyaan === "Y" && (
-                  <>
-                    <View>
-                      <Text style={tw`text-blue-600 mb-2 italic mt-3`}>
-                        {selectedSubs.about_me}
-                      </Text>
-                    </View>
-                    <View>
-                      <Text style={tw`text-blue-600 italic mb-2 mt-2`}>
-                        CV: {selectedSubs.user_cv}
-                      </Text>
-                    </View>
-                  </>
-                )}
-              </View>
-            )}
-
-            <View style={tw`flex-row justify-end gap-3 mt-2 mb-5`}>
-              <Pressable
-                style={tw`bg-gray-300 px-4 py-2 rounded-lg`}
-                onPress={() => {
-                  setModalVisible(false);
-                  setSelectedSubs(null);
-                }}>
-                <Text style={tw`text-gray-700`}>Batal</Text>
-              </Pressable>
-              <Pressable
-                style={tw`bg-blue-500 px-4 py-2 rounded-lg`}
-                onPress={handleConfirmVerifikasi}>
-                <Text style={tw`text-white font-bold`}>Verifikasi Relawan</Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      <ModalApply
+        modalVisible={modalVisible}
+        setModalVisible={setModalVisible}
+        selectedSubs={selectedSubs}
+        setSelectedSubs={setSelectedSubs}
+        isPertanyaan={isPertanyaan}
+        handleConfirmVerifikasi={handleConfirmVerifikasi}
+      />
     </View>
   );
 }

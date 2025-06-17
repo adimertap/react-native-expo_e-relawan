@@ -1,8 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import Constants from 'expo-constants';
+import * as Notifications from 'expo-notifications';
 import { jwtDecode } from 'jwt-decode';
 import React, { useContext, useEffect, useState } from 'react';
 import { Platform } from 'react-native';
-import { TOKEN_KEY } from '../constants/env';
+import { API_URL, TOKEN_KEY } from '../constants/env';
 import { useAuth } from '../hooks/Auth/useAuth';
 
 // Platform-specific storage implementation
@@ -195,6 +198,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         authenticated: true,
         initialized: true,
       }));
+    }
+  };
+
+  const getFCMToken = async () => {
+    try {
+      // Request permission for notifications
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== 'granted') {
+        console.log('Notification permission not granted');
+        return;
+      }
+
+      // Get the FCM token
+      const token = await Notifications.getExpoPushTokenAsync({
+        projectId: Constants.expoConfig?.extra?.eas?.projectId,
+      });
+
+      // Store token locally
+      await AsyncStorage.setItem('fcmToken', token.data);
+      
+      // If user is logged in, send token to backend
+      if (authState?.user_id) {
+        try {
+          await axios.post(`${API_URL}/api/user/update-fcm-token`, {
+            user_id: authState.user_id,
+            fcm_token: token.data
+          });
+          console.log('FCM token updated successfully');
+        } catch (error) {
+          console.error('Error updating FCM token:', error);
+        }
+      }
+
+      return token.data;
+    } catch (error) {
+      console.error('Error getting FCM token:', error);
+      return null;
     }
   };
 

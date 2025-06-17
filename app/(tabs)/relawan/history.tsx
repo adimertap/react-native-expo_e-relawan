@@ -6,12 +6,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    Image,
-    RefreshControl,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View
+  Image,
+  RefreshControl,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
 import tw from "twrnc";
 
@@ -154,7 +154,7 @@ export default function HistoryRelawanScreen() {
             <View
               key={applyKegiatan.subs_kegiatan_id}
               style={tw`bg-white px-2 py-2 mr-2`}>
-              <View style={tw`flex-row items-center mb-3`}>
+              {/* <View style={tw`flex-row items-center mb-3`}>
                 <View style={tw`bg-blue-400 rounded-md px-2 py-1`}>
                   <Text style={tw`text-white text-xs`}>
                     {applyKegiatan.kegiatan?.topic?.topic_nama}
@@ -165,7 +165,7 @@ export default function HistoryRelawanScreen() {
                     {applyKegiatan.kegiatan?.jenis_kegiatan?.jenis_kegiatan}
                   </Text>
                 </View>
-              </View>
+              </View> */}
               <View style={tw`flex-row items-center justify-between w-full`}>
                 <View style={tw`flex-col`}>
                   <Text style={tw`text-black text-sm font-medium`}>

@@ -5,6 +5,12 @@ import React, { useEffect, useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import tw from "twrnc";
 
+interface LoginResponse {
+  success: boolean;
+  message: string;
+  token: string;
+}
+
 const slides = [
   {
     title: "Bergabung Menjadi Relawan",
@@ -34,6 +40,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [error, setError] = useState("");
+  const [loginSuccess, setLoginSuccess] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -42,6 +49,22 @@ const Login = () => {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    if (loginSuccess && authState?.role) {
+      const role = authState.role;
+      const is_subcribed = authState.choose_topic;
+      
+      if (role === 'relawan' && !is_subcribed) {
+        router.replace("/subcribeTopic");
+      } else if(role === 'relawan' && is_subcribed) {
+        router.replace("/(tabs)/relawan");
+      } else if(role === 'organisasi') {
+        router.replace("/(tabs)/organisasi");
+      }
+      setLoginSuccess(false);
+    }
+  }, [loginSuccess, authState, router]);
+
   const handleLogin = async () => {
     try {
       if (!email || !password) {
@@ -49,17 +72,8 @@ const Login = () => {
         return;
       }
       const success = await login(email, password);
-      console.log("Login result:", success);
       if (success) {
-        const role = authState?.role;
-        const is_subcribed = authState?.choose_topic;
-        if (role === 'relawan' && !is_subcribed) {
-          router.replace("/subcribeTopic");
-        } else if(role === 'relawan' && is_subcribed) {
-          router.replace("/(tabs)/relawan");
-        } else if(role === 'organisasi') {
-          router.replace("/(tabs)/organisasi");
-        }
+        setLoginSuccess(true);
       }
     } catch (err) {
       console.error("Login error:", err);
@@ -158,8 +172,8 @@ const Login = () => {
             <TouchableOpacity
               disabled={loading}
               onPress={handleLogin}
-              style={tw`bg-blue-700 w-75 rounded-full py-4 mb-5  justify-center items-center`}>
-              <Text style={tw`text-white font-bold`}>Login</Text>
+              style={tw`bg-blue-700 w-75 rounded-full py-4 mb-5  justify-center items-center ${loading ? 'opacity-50' : ''}`}>
+              <Text style={tw`text-white font-bold`}>{loading ? 'Loading...' : 'Login'}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               disabled={loading}

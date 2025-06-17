@@ -6,16 +6,16 @@ export default function TabLayoutRelawan() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#000',
-        tabBarInactiveTintColor: '#9ca3af', 
+        tabBarActiveTintColor: '#FFF',
+        tabBarInactiveTintColor: '#bce2ff', 
         headerShown: false,
         tabBarShowLabel: true,
         tabBarStyle: {
-          backgroundColor: '#fff',
+          backgroundColor: '#2f73dc',
           borderTopLeftRadius: 24,
           borderTopRightRadius: 24,
-          height: 85,
-          paddingTop: 10,
+          height: 92,
+          paddingTop: 12,
           position: 'absolute',
           shadowColor: '#000',
           shadowOpacity: 0.1,
@@ -36,6 +36,20 @@ export default function TabLayoutRelawan() {
         options={{
           title: 'Riwayat',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="clock.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="notifikasi"
+        options={{
+          title: 'Notifikasi',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="bell.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
         }}
       />
     </Tabs>

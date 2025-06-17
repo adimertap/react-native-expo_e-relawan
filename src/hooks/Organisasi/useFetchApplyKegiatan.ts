@@ -1,36 +1,21 @@
-// import { API_URL } from '@env';
 import { API_URL } from '@/src/constants/env';
 import { useAuthContext } from '@/src/contexts/AuthContext';
 import { KegiatanType } from '@/src/types/types';
 import { useCallback, useEffect, useState } from 'react';
 
-interface FetchKegiatanParams {
-  search?: string;
-  topic_id?: number;
-}
-
-export const useFetchKegiatanSelf = (params?: FetchKegiatanParams) => {
+export const useFetchApplyKegiatan = () => {
   const [kegiatan, setKegiatan] = useState<KegiatanType[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { authState } = useAuthContext();
 
-  const fetchKegiatanSelf = useCallback(async () => {
+  const fetchApplyKegiatan = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      
-      // Build query parameters
-      const queryParams = new URLSearchParams();
-      if (params?.search) {
-        queryParams.append('search', params.search);
-      }
-      if (params?.topic_id) {
-        queryParams.append('topic_id', params.topic_id.toString());
-      }
 
       const response = await fetch(
-        `${API_URL}/mobile/kegiatan/organisasi?${queryParams.toString()}`,
+        `${API_URL}/mobile/organisasi/list/apply`,
         {
           method: 'GET',
           headers: {
@@ -41,7 +26,7 @@ export const useFetchKegiatanSelf = (params?: FetchKegiatanParams) => {
       );
       
       if (!response.ok) {
-        throw new Error('Failed to fetch kegiatan self data');
+        throw new Error('Failed to fetch apply kegiatan data');
       }
 
       const data = await response.json();
@@ -51,19 +36,17 @@ export const useFetchKegiatanSelf = (params?: FetchKegiatanParams) => {
     } finally {
       setLoading(false);
     }
-  }, [authState?.token, params?.search, params?.topic_id]);
+  }, [authState?.token]);
 
   useEffect(() => {
-    if (authState?.token) {
-      fetchKegiatanSelf();
-    }
-  }, [fetchKegiatanSelf]);
+    fetchApplyKegiatan();
+  }, [fetchApplyKegiatan]);
 
   return {
     kegiatan,
     loading,
     error,
-    refetch: fetchKegiatanSelf
+    refetch: fetchApplyKegiatan
   };
 };
 

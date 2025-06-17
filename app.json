@@ -10,7 +10,9 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.mobilereact"
+      "bundleIdentifier": "com.anonymous.mobilereact",
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "deploymentTarget": "16.0"
     },
     "android": {
       "adaptiveIcon": {
@@ -18,7 +20,8 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.mobilereact"
+      "package": "com.anonymous.mobilereact",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",
@@ -26,7 +29,16 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      "expo-notifications",
       "expo-router",
+      [
+        "@react-native-firebase/app",
+        {
+          "ios_google_services_file": "./GoogleService-Info.plist",
+          "android_google_services_file": "./google-services.json"
+        }
+      ],
+      "@react-native-firebase/messaging",
       [
         "expo-splash-screen",
         {

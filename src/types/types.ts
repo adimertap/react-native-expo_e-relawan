@@ -28,6 +28,7 @@ export interface UserType {
   created_at?: string;
   provinsi?: ProvinsiType;
   kabupaten?: KabupatenType;
+  subs_kegiatan? :SubsKegiatanType[];
 }
 
 export interface OrganisasiType {
@@ -109,4 +110,17 @@ export interface SubsKegiatanType {
   user_cv?: string;
   user?: UserType;
   kegiatan?: KegiatanType;
+  created_at?: string;
+}
+
+export interface NotifikasiType {
+  notifikasi_id?: number;
+  jenis?:string;
+  user_id?: number;
+  subject?: string;
+  message?: string;
+  created_at?: string;
+  updated_at?: string;
+  sent_status?: string;
+  user?: UserType;
 }
