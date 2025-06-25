@@ -23,7 +23,6 @@ export const useAuth = () => {
       setLoading(true);
       setError(null);
       const response = await axios.post(`${API_URL}/auth/login`, credentials);
-      console.log("Login response:", response);
       return response.data;
     } catch (err: any) {
       setError(err.response?.data?.message || 'An error occurred during login');
@@ -39,9 +38,7 @@ export const useAuth = () => {
       setError(null);
       const token = await AsyncStorage.getItem(TOKEN_KEY);
       
-      // Remove token first to prevent any subsequent requests from using it
       await AsyncStorage.removeItem(TOKEN_KEY);
-      
       if (token) {
         try {
           await axios.post(`${API_URL}/auth/logout`, {}, {
@@ -49,18 +46,19 @@ export const useAuth = () => {
               Authorization: `Bearer ${token}`
             }
           });
-        } catch (err) {
-          // Even if the logout API call fails, we've already removed the token
-          console.error('Logout API error:', err);
+        } catch (err: any) {
+          if (![401, 403].includes(err.response?.status)) {
+            console.error('Logout API error:', err);
+          }
         }
       }
     } catch (err: any) {
       console.error('Logout error:', err);
-      setError(err.response?.data?.message || 'An error occurred during logout');
+      setError(err.message || 'An error occurred during logout');
     } finally {
       setLoading(false);
     }
   };
 
   return { login, logout, loading, error };
-}; 
+};

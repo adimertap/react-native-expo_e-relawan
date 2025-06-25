@@ -49,7 +49,11 @@ export default function DetailKegiatanRelawanScreen() {
   const [provinsi, setProvinsi] = useState<string>("");
   const [status, setStatus] = useState<string>("");
   const { refetch: refetchKegiatan } = useFetchKegiatanSelf();
-  const { applyKegiatan, loading: loadingApplyKegiatan, error: errorApplyKegiatan } = useApplyKegiatan();
+  const {
+    applyKegiatan,
+    loading: loadingApplyKegiatan,
+    error: errorApplyKegiatan
+  } = useApplyKegiatan();
 
   useEffect(() => {
     if (detailKegiatan) {
@@ -82,7 +86,10 @@ export default function DetailKegiatanRelawanScreen() {
 
   const handleDaftar = async (kegiatan_id: number) => {
     try {
-      const result = await applyKegiatan({ kegiatan_id: kegiatan_id, status: status });
+      const result = await applyKegiatan({
+        kegiatan_id: kegiatan_id,
+        status: status
+      });
       if (result.success) {
         Alert.alert("Berhasil", result.message, [
           {
@@ -127,13 +134,13 @@ export default function DetailKegiatanRelawanScreen() {
           <Text
             style={tw`text-white text-xs px-2 py-1 rounded-2xl ${
               status === "Verified" ? "bg-green-500" : ""
-            } ${status === "Run" ? "bg-blue-500" : ""} ${
-              status === "Completed" ? "bg-green-500" : ""
+            } ${status === "Berjalan" ? "bg-blue-500" : ""} ${
+              status === "Selesai" ? "bg-green-500" : ""
             } 
             }`}>
             {status === "Verified" && "Daftar Sekarang Juga!"}
-            {status === "Run" && "Sedang Berjalan"}
-            {status === "Completed" && "Selesai"}
+            {status === "Berjalan" && "Sedang Berjalan"}
+            {status === "Selesai" && "Selesai"}
           </Text>
         </View>
         <View style={tw`mt-10`}>
@@ -208,29 +215,43 @@ export default function DetailKegiatanRelawanScreen() {
               {errorApplyKegiatan}
             </Text>
           )}
-          <TouchableOpacity
-            style={tw`bg-blue-600 rounded-full px-5 py-3 mt-10`}
-            disabled={loadingApplyKegiatan}
-            onPress={() => {
-              if (detailKegiatan?.perlu_pertanyaan === "Y") {
-                router.push({
-                  pathname: "/relawan/kegiatan/daftar",
-                  params: {
-                    id: id
+          {status === "Verified" && (
+            <>
+              <TouchableOpacity
+                style={tw`bg-blue-600 rounded-full px-5 py-3 mt-10`}
+                disabled={loadingApplyKegiatan}
+                onPress={() => {
+                  if (detailKegiatan?.perlu_pertanyaan === "Y") {
+                    router.push({
+                      pathname: "/relawan/kegiatan/daftar",
+                      params: {
+                        id: id
+                      }
+                    });
+                  } else {
+                    handleDaftar(Number(id));
                   }
-                });
-              } else {
-                handleDaftar(Number(id));
-              }
-            }}>
-            {loadingApplyKegiatan ? (
-              <ActivityIndicator size="small" color="white" />
-            ) : (
-              <Text style={tw`text-white text-sm text-center font-bold`}>
-                Daftar Sekarang!
-              </Text>
-            )}
-          </TouchableOpacity>
+                }}>
+                {loadingApplyKegiatan ? (
+                  <ActivityIndicator size="small" color="white" />
+                ) : (
+                  <Text style={tw`text-white text-sm text-center font-bold`}>
+                    Daftar Sekarang!
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </>
+          )}
+          {status === "Berjalan" && (
+            <Text style={tw`text-red-500 text-sm text-center italic mt-10`}>
+              Tidak dapat mendaftar karena event sudah berjalan
+            </Text>
+          )}
+          {status === "Selesai" && (
+            <Text style={tw`text-red-500 text-sm text-center italic mt-10`}>
+              Tidak dapat mendaftar karena event sudah selesai
+            </Text>
+          )}
         </ScrollView>
       </View>
     </View>

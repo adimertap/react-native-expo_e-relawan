@@ -5,13 +5,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Image,
-    RefreshControl,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Image,
+  RefreshControl,
+  ScrollView,
+  Text,
+  View
 } from "react-native";
 import tw from "twrnc";
 
@@ -82,11 +81,11 @@ export default function NotifikasiScreen() {
               <Text style={tw`text-white text-sm ml-2 italic`}>Organisasi</Text>
             </View>
           </View>
-          <View style={tw`flex-row items-center`}>
+          {/* <View style={tw`flex-row items-center`}>
             <TouchableOpacity onPress={() => logout()}>
               <Ionicons name="log-out-outline" size={25} color="white" />
             </TouchableOpacity>
-          </View>
+          </View> */}
         </View>
       </View>
       <View style={tw`flex-row items-center justify-between px-5 mt-5`}>

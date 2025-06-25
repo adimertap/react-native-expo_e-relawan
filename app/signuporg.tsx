@@ -56,7 +56,7 @@ const Signuporg = () => {
           </Text>
         </View>
 
-        <View style={tw`pl-1 pr-1`}>
+        <View style={tw`pl-1 pr-1 mt-3`}>
           <View style={tw`flex-row items-center mb-3`}>
             <TouchableOpacity
               style={tw`mr-4 bg-white rounded-full px-4 py-2`}

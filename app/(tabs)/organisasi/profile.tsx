@@ -1,4 +1,5 @@
 import ModalChangePassword from "@/components/new/ModalChangePassword";
+import ModalUpdateProfile from "@/components/new/ModalUpdateProfile";
 import { useAuthContext } from "@/src/contexts/AuthContext";
 import { useFetchProfile } from "@/src/hooks/Organisasi/useFetchProfile";
 import { OrganisasiType } from "@/src/types/types";
@@ -22,6 +23,7 @@ export default function ProfileScreen() {
   const [profile, setProfile] = useState<OrganisasiType | null>(null);
   const isLoggingOut = useRef(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [modalUpdateProfileVisible, setModalUpdateProfileVisible] = useState(false);
 
 
   
@@ -98,6 +100,15 @@ export default function ProfileScreen() {
   const handleModalChangePassword = async () => {
     try {
       setModalVisible(true);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const handleModalUpdateProfile = async () => {
+    try {
+      // setModalUpdateProfileVisible(true);
+      router.push("/organisasi/profile/update");
     } catch (error) {
       console.log(error);
     }
@@ -195,6 +206,7 @@ export default function ProfileScreen() {
           <View style={tw`h-0.4 bg-gray-100 mt-2 mb-2`} />
 
           <TouchableOpacity
+            onPress={() => handleModalUpdateProfile()}
             style={tw`bg-white border border-gray-400 rounded-lg p-2 mt-5 flex-row items-center justify-center`}>
             <Text style={tw`text-black text-sm font-medium`}>
               Update Profile
@@ -219,6 +231,13 @@ export default function ProfileScreen() {
         modalVisible={modalVisible}
         setModalVisible={setModalVisible}
         user_id={authState?.user_id || 0}
+      />
+      <ModalUpdateProfile
+        modalVisible={modalUpdateProfileVisible}
+        setModalVisible={setModalUpdateProfileVisible}
+        user_id={authState?.user_id || 0}
+        profile={profile}
+        refetchProfile={refetchProfile}
       />
 
 

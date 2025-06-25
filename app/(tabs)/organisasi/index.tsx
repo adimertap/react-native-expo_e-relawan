@@ -210,16 +210,16 @@ export default function HomeScreen() {
                       Verified
                     </Text>
                   )}
-                  {kegiatan.status === "Run" && (
+                  {kegiatan.status === "Berjalan" && (
                     <Text
                       style={tw`bg-blue-500 text-white text-xs px-2 py-1 rounded-2xl`}>
-                      Run
+                      Sedang Berjalan
                     </Text>
                   )}
-                  {kegiatan.status === "Completed" && (
+                  {kegiatan.status === "Selesai" && (
                     <Text
                       style={tw`bg-green-500 text-white text-xs px-2 py-1 rounded-2xl`}>
-                      Completed
+                      Selesai
                     </Text>
                   )}
                   {kegiatan.status === "Cancelled" && (
@@ -239,8 +239,8 @@ export default function HomeScreen() {
                   {kegiatan.status === "Draft" &&
                     "Menunggu persetujuan dari Admin"}
                   {kegiatan.status === "Verified" && "Terverifikasi"}
-                  {kegiatan.status === "Run" && "Sedang Berjalan"}
-                  {kegiatan.status === "Completed" && "Selesai"}
+                  {kegiatan.status === "Berjalan" && "Sedang Berjalan"}
+                  {kegiatan.status === "Selesai" && "Selesai"}
                   {kegiatan.status === "Cancelled" && "Dibatalkan oleh Admin"}
                 </Text>
               </View>

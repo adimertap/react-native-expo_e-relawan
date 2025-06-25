@@ -94,21 +94,21 @@ export const useNotifications = () => {
       await AsyncStorage.setItem('fcmToken', mockToken);
       
       // If user is logged in, send mock token to backend
-      if (authState?.user_id) {
-        try {
-          const response = await axios.post(`${API_URL}/user/update-fcm-token`, {
-            user_id: authState.user_id,
-            fcm_token: mockToken
-          }, {
-            headers: {
-              'Authorization': `Bearer ${authState.token}`
-            }
-          });
-          console.log('Mock FCM token updated successfully:', response.data);
-        } catch (error) {
-          console.error('Error updating mock FCM token:', error);
-        }
-      }
+      // if (authState?.user_id) {
+      //   try {
+      //     const response = await axios.post(`${API_URL}/user/update-fcm-token`, {
+      //       user_id: authState.user_id,
+      //       fcm_token: mockToken
+      //     }, {
+      //       headers: {
+      //         'Authorization': `Bearer ${authState.token}`
+      //       }
+      //     });
+      //     console.log('Mock FCM token updated successfully:', response.data);
+      //   } catch (error) {
+      //     // console.error('Error updating mock FCM token:', error);
+      //   }
+      // }
       return { data: mockToken };
     }
 

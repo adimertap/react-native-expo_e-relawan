@@ -75,7 +75,7 @@ export default function ModalChangePassword({
               <Ionicons name="close-outline" size={25} color="black" />
             </TouchableOpacity>
           </View>
-          <View style={tw`mt-4 mb-4`}>
+          <View style={tw`mt-4 mb-1`}>
             <View
               style={tw`border border-gray-200 rounded-full px-4 py-4 mb-1 bg-white flex-row items-center`}>
               <TextInput
@@ -94,7 +94,7 @@ export default function ModalChangePassword({
               </TouchableOpacity>
             </View>
           </View>
-          <View style={tw`mt-2 mb-4`}>
+          <View style={tw`mt-2 mb-5`}>
             <View
               style={tw`border border-gray-200 rounded-full px-4 py-4 mb-1 bg-white flex-row items-center`}>
               <TextInput
@@ -120,8 +120,8 @@ export default function ModalChangePassword({
               {errorChangePassword}
             </Text>
           )}
-          <View style={tw`h-0.4 bg-gray-200 mt-5 mb-3`} />
-          <View style={tw`flex-row justify-end gap-3 mt-2 mb-5`}>
+          {/* <View style={tw`h-0.4 bg-gray-200 mt-5 mb-5`} /> */}
+          <View style={tw`flex-row justify-end gap-3 mt-5 mb-10`}>
             <Pressable
               style={tw`bg-gray-300 px-4 py-2 rounded-lg`}
               onPress={() => {

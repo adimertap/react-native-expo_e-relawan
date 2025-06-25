@@ -12,6 +12,7 @@ import {
   View
 } from "react-native";
 import tw from "twrnc";
+import ModalReview from "./modalReview";
 
 export default function DetailApplyKegiatanRelawanScreen() {
   const { id } = useLocalSearchParams();
@@ -37,6 +38,8 @@ export default function DetailApplyKegiatanRelawanScreen() {
     loading: loadingApplyKegiatan,
     error: errorApplyKegiatan
   } = useApplyKegiatan();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedSubs, setSelectedSubs] = useState<number | null>(null);
 
   useEffect(() => {
     if (applyDetailKegiatan) {
@@ -60,6 +63,11 @@ export default function DetailApplyKegiatanRelawanScreen() {
     const month = (dateObj.getMonth() + 1).toString().padStart(2, "0");
     const year = dateObj.getFullYear();
     return `${day}/${month}/${year}`;
+  };
+
+  const handleReviewKegiatan = (subs_kegiatan_id: number) => {
+    setSelectedSubs(subs_kegiatan_id);
+    setModalVisible(true);
   };
 
   return (
@@ -93,14 +101,33 @@ export default function DetailApplyKegiatanRelawanScreen() {
             {status === "Y" && "Diterima"}
             {status === "N" && "Pendaftaran On Review"}
           </Text>
+          <View style={tw`h-0.5 bg-gray-200 mt-3 mb-2`} />
           {/* Tambah button add to calendar */}
-          {status === "Y" && (
-            <TouchableOpacity
-              style={tw`bg-blue-500 rounded-full px-4 py-2 flex-row items-center`}>
-              <Ionicons name="calendar-outline" size={16} color="white" />
-              <Text style={tw`text-white text-xs ml-2`}>Kalender</Text>
-            </TouchableOpacity>
-          )}
+          {status === "Y" &&
+            applyDetailKegiatan?.kegiatan?.status !== "Selesai" && (
+              <TouchableOpacity
+                style={tw`bg-blue-500 rounded-full px-4 py-2 flex-row items-center`}>
+                <Ionicons name="calendar-outline" size={16} color="white" />
+                <Text style={tw`text-white text-xs ml-2`}>Kalender</Text>
+              </TouchableOpacity>
+            )}
+          {applyDetailKegiatan?.kegiatan?.status === "Selesai" &&
+            applyDetailKegiatan?.rating === 0 && (
+              <TouchableOpacity
+                onPress={() =>
+                  handleReviewKegiatan(
+                    applyDetailKegiatan?.subs_kegiatan_id || 0
+                  )
+                }
+                style={tw`bg-blue-500 rounded-full px-4 py-2 flex-row items-center`}>
+                <Ionicons
+                  name="document-text-outline"
+                  size={16}
+                  color="white"
+                />
+                <Text style={tw`text-white text-xs ml-2`}>Review Kegiatan</Text>
+              </TouchableOpacity>
+            )}
         </View>
         <View style={tw`mt-6`}>
           <Text style={tw`text-black text-lg font-medium`}>{namaKegiatan}</Text>
@@ -157,7 +184,9 @@ export default function DetailApplyKegiatanRelawanScreen() {
           <View style={tw`h-0.5 bg-gray-200 mt-3 mb-2`} />
           {applyDetailKegiatan?.kegiatan?.perlu_pertanyaan === "Y" && (
             <>
-              <Text style={tw`text-gray-600 font-sm mt-3`}>Mengapa Memilih Saya: </Text>
+              <Text style={tw`text-gray-600 font-sm mt-3`}>
+                Mengapa Memilih Saya:{" "}
+              </Text>
               <Text style={tw`text-gray-800 font-sm mt-3 italic`}>
                 {applyDetailKegiatan?.about_me}
               </Text>
@@ -169,7 +198,40 @@ export default function DetailApplyKegiatanRelawanScreen() {
               </View>
             </>
           )}
+          {applyDetailKegiatan?.kegiatan?.status === "Selesai" &&
+            applyDetailKegiatan?.rating !== 0 && (
+              <>
+                <View style={tw`h-0.5 bg-gray-200 mt-8 mb-2`} />
+                <View style={tw`flex-row flex items-center justify-start mt-1`}>
+                  <Text style={tw`text-gray-600 font-sm mt-3`}>Rating: </Text>
+                  <View style={tw`flex-row items-center`}>
+                    {[...Array(applyDetailKegiatan?.rating)].map((_, index) => (
+                      <Ionicons
+                        key={index}
+                        name="star"
+                        size={16}
+                        color="#FFD700"
+                        style={tw`ml-1 mt-3`}
+                      />
+                    ))}
+                  </View>
+                </View>
+                <View style={tw`flex-row flex items-center justify-start mt-1`}>
+                  <Text style={tw`text-gray-600 font-sm mt-3`}>Review: </Text>
+                  <Text style={tw`text-blue-800 font-sm mt-3 italic`}>
+                    {applyDetailKegiatan?.review}
+                  </Text>
+                </View>
+              </>
+            )}
         </ScrollView>
+        <ModalReview
+          modalVisible={modalVisible}
+          setModalVisible={setModalVisible}
+          subs_kegiatan_id={selectedSubs || 0}
+          nama_kegiatan={namaKegiatan}
+          setSelectedSubs={setSelectedSubs}
+        />
       </View>
     </View>
   );

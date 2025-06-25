@@ -1,17 +1,18 @@
 import ModalChangePassword from "@/components/new/ModalChangePassword";
+import ModalUpdateProfile from "@/components/new/ModalUpdateProfile";
 import { useAuthContext } from "@/src/contexts/AuthContext";
 import { useFetchProfileRelawan } from "@/src/hooks/Relawan/useFetchProfile";
 import { UserType } from "@/src/types/types";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    Image,
-    RefreshControl,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Image,
+  RefreshControl,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
 import tw from "twrnc";
 
@@ -22,6 +23,7 @@ export default function ProfileRelawanScreen() {
   const [profile, setProfile] = useState<UserType | null>(null);
   const isLoggingOut = useRef(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [modalUpdateProfileVisible, setModalUpdateProfileVisible] = useState(false);
   const {
     profile: profileData,
     loading: loadingProfile,
@@ -100,6 +102,14 @@ export default function ProfileRelawanScreen() {
     }
   }
 
+  const handleModalUpdateProfile = async () => {
+    try {
+      router.push("/relawan/profile/update");
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   return (
     <View style={tw`flex-1`}>
       <View style={tw`h-[40%] bg-blue-600`}>
@@ -114,6 +124,14 @@ export default function ProfileRelawanScreen() {
           <Text style={tw`text-white text-base italic`}>
             {authState?.email}
           </Text>
+          <TouchableOpacity
+            onPress={() => router.push("/subcribeTopic")}
+            style={tw`bg-white border border-blue-400 rounded-lg p-2 mt-3 flex-row items-center justify-center w-40 mt-5`}>
+            <Text style={tw`text-blue-500 text-sm font-medium`}>
+              Choose Topic
+            </Text>
+
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -174,23 +192,24 @@ export default function ProfileRelawanScreen() {
             </Text>
           </View>
           <View style={tw`h-0.4 bg-gray-100 mt-2 mb-2`} />
-
+         
           <TouchableOpacity
-            style={tw`bg-white border border-gray-400 rounded-lg p-2 mt-5 flex-row items-center justify-center`}>
+            onPress={() => handleModalUpdateProfile()}
+            style={tw`bg-white border border-gray-400 rounded-lg p-2 mt-4 flex-row items-center justify-center`}>
             <Text style={tw`text-black text-sm font-medium`}>
               Update Profile
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
              onPress={() => handleModalChangePassword()}
-            style={tw`bg-white border border-gray-400 rounded-lg p-2 mt-5 flex-row items-center justify-center`}>
+            style={tw`bg-white border border-gray-400 rounded-lg p-2 mt-4 flex-row items-center justify-center`}>
             <Text style={tw`text-black text-sm font-medium`}>
               Change Password
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={handleLogout}
-            style={tw`bg-white border border-red-500 rounded-lg p-2 mt-5 flex-row items-center justify-center`}>
+            style={tw`bg-white border border-red-500 rounded-lg p-2 mt-4 flex-row items-center justify-center`}>
             <Text style={tw`text-red-500 text-sm font-medium`}>Logout</Text>
           </TouchableOpacity>
         </ScrollView>
@@ -199,6 +218,13 @@ export default function ProfileRelawanScreen() {
         modalVisible={modalVisible}
         setModalVisible={setModalVisible}
         user_id={authState?.user_id || 0}
+      />
+      <ModalUpdateProfile
+        modalVisible={modalUpdateProfileVisible}
+        setModalVisible={setModalUpdateProfileVisible}
+        user_id={authState?.user_id || 0}
+        profile={profile}
+        refetchProfile={refetchProfile}
       />
 
 

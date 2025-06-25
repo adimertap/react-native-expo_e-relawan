@@ -52,7 +52,7 @@ const Signup = () => {
             Create an account to get started. Please select your user type.
           </Text>
         </View>
-        <View style={tw`pl-1 pr-1`}>
+        <View style={tw`pl-1 pr-1 mt-3`}>
           <View style={tw`flex-row items-center mb-3`}>
             <TouchableOpacity
               style={tw`mr-4 bg-blue-700 rounded-full px-4 py-2`}

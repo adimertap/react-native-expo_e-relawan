@@ -168,20 +168,20 @@ const Login = () => {
               </Text>
             </Text>
           </View>
-          <View style={tw`justify-center items-center mt-3`}>
+          <View style={tw`justify-center items-center mt-10 mb-13`}>
             <TouchableOpacity
               disabled={loading}
               onPress={handleLogin}
               style={tw`bg-blue-700 w-75 rounded-full py-4 mb-5  justify-center items-center ${loading ? 'opacity-50' : ''}`}>
               <Text style={tw`text-white font-bold`}>{loading ? 'Loading...' : 'Login'}</Text>
             </TouchableOpacity>
-            <TouchableOpacity
+            {/* <TouchableOpacity
               disabled={loading}
               onPress={() => console.log(`Test`)}
               style={tw`bg-white border border-gray-300 w-75 rounded-full py-2 mb-10 justify-center items-center flex-row`}>
               <Ionicons name="logo-google" size={24} color="blue" style={tw`mr-2`} />
               <Text style={tw`text-black ml-2`}>Continue with Google</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
         </View>
       </View>

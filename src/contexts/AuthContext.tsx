@@ -227,7 +227,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
           console.log('FCM token updated successfully');
         } catch (error) {
-          console.error('Error updating FCM token:', error);
+          // console.error('Error updating FCM token:', error);
         }
       }
 

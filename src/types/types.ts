@@ -111,6 +111,8 @@ export interface SubsKegiatanType {
   user?: UserType;
   kegiatan?: KegiatanType;
   created_at?: string;
+  rating?: number;
+  review?: string;
 }
 
 export interface NotifikasiType {

@@ -1,10 +1,15 @@
 import { useAuthContext } from "@/src/contexts/AuthContext";
 import { useDeleteKegiatan } from "@/src/hooks/Organisasi/useDeleteKegiatan";
 import { useFetchDetailKegiatan } from "@/src/hooks/Organisasi/useFetchDetailKegiatan";
-import { useVerifikasiKegiatan } from "@/src/hooks/Organisasi/useVerifikasiKegiatan";
+import { useUpdateKegiatanBerjalan } from "@/src/hooks/Organisasi/useUpdateKegiatanBerjalan";
+import { useUpdateKegiatanSelesai } from "@/src/hooks/Organisasi/useUpdateKegiatanSelesai";
+import {
+  useTolakKegiatan,
+  useVerifikasiKegiatan
+} from "@/src/hooks/Organisasi/useVerifikasiKegiatan";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   RefreshControl,
@@ -20,7 +25,6 @@ export default function DetailKegiatanScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const { authState, logout } = useAuthContext();
-  const scrollViewRef = useRef<ScrollView>(null);
 
   const {
     detailKegiatan,
@@ -38,6 +42,11 @@ export default function DetailKegiatanScreen() {
     loading: loadingVerifikasiKegiatan,
     error: errorVerifikasiKegiatan
   } = useVerifikasiKegiatan();
+  const {
+    tolakKegiatan,
+    loading: loadingTolakKegiatan,
+    error: errorTolakKegiatan
+  } = useTolakKegiatan();
   const [namaKegiatan, setNamaKegiatan] = useState<string>("");
   const [topic, setTopic] = useState<string>("");
   const [jenisKegiatan, setJenisKegiatan] = useState<string>("");
@@ -57,7 +66,8 @@ export default function DetailKegiatanScreen() {
   const [status, setStatus] = useState<string>("");
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedSubs, setSelectedSubs] = useState<any>(null);
-
+  const { updateKegiatanBerjalan } = useUpdateKegiatanBerjalan();
+  const { updateKegiatanSelesai } = useUpdateKegiatanSelesai();
   useEffect(() => {
     if (detailKegiatan) {
       setNamaKegiatan(detailKegiatan.nama_kegiatan || "");
@@ -138,6 +148,42 @@ export default function DetailKegiatanScreen() {
       setModalVisible(false);
       setSelectedSubs(null);
     } catch (error) {
+      Alert.alert("Gagal", "Relawan gagal diverifikasi");
+      console.log(error);
+    }
+  };
+
+  const handleConfirmTolak = async () => {
+    try {
+      await tolakKegiatan(Number(id), selectedSubs?.user_id || 0);
+      Alert.alert("Berhasil", "Relawan berhasil ditolak");
+      await refetchKegiatan(Number(id));
+      setModalVisible(false);
+      setSelectedSubs(null);
+    } catch (error) {
+      Alert.alert("Gagal", "Relawan gagal ditolak");
+      console.log(error);
+    }
+  };
+
+  const handleEventBerjalan = async () => {
+    try {
+      await updateKegiatanBerjalan(Number(id));
+      Alert.alert("Berhasil", "Event berhasil diubah menjadi berjalan");
+      await refetchKegiatan(Number(id));
+    } catch (error) {
+      Alert.alert("Gagal", "Event gagal diubah menjadi berjalan");
+      console.log(error);
+    }
+  };
+
+  const handleEventSelesai = async () => {
+    try {
+      await updateKegiatanSelesai(Number(id));
+      Alert.alert("Berhasil", "Event berhasil diubah menjadi selesai");
+      await refetchKegiatan(Number(id));
+    } catch (error) {
+      Alert.alert("Gagal", "Event gagal diubah menjadi selesai");
       console.log(error);
     }
   };
@@ -170,14 +216,14 @@ export default function DetailKegiatanScreen() {
             style={tw`text-white text-xs px-2 py-1 rounded-2xl ${
               status === "Draft" ? "bg-red-500" : ""
             } ${status === "Verified" ? "bg-green-500" : ""} ${
-              status === "Run" ? "bg-blue-500" : ""
-            } ${status === "Completed" ? "bg-green-500" : ""} ${
+              status === "Berjalan" ? "bg-blue-500" : ""
+            } ${status === "Selesai" ? "bg-green-500" : ""} ${
               status === "Cancelled" ? "bg-red-500" : ""
             }`}>
             {status === "Draft" && "Menunggu Persetujuan"}
             {status === "Verified" && "Terverifikasi"}
-            {status === "Run" && "Sedang Berjalan"}
-            {status === "Completed" && "Selesai"}
+            {status === "Berjalan" && "Sedang Berjalan"}
+            {status === "Selesai" && "Kegiatan Selesai"}
             {status === "Cancelled" && "Dibatalkan oleh Admin"}
           </Text>
           <View style={tw`flex-row items-center justify-end `}>
@@ -206,6 +252,30 @@ export default function DetailKegiatanScreen() {
                   onPress={handleDeleteKegiatan}
                   disabled={loadingDetailKegiatan}>
                   <Ionicons name="trash-outline" size={18} color="white" />
+                </TouchableOpacity>
+              </>
+            )}
+            {status === "Verified" && (
+              <>
+                <TouchableOpacity
+                  style={tw`bg-blue-500 py-1.5 px-4 rounded-full flex-row items-center justify-center ${
+                    loadingDetailKegiatan ? "opacity-50" : ""
+                  }`}
+                  onPress={handleEventBerjalan}
+                  disabled={loadingDetailKegiatan}>
+                  <Text style={tw`text-white text-sm`}>Event Berjalan</Text>
+                </TouchableOpacity>
+              </>
+            )}
+             {status === "Berjalan" && (
+              <>
+                <TouchableOpacity
+                  style={tw`bg-green-500 py-1.5 px-4 rounded-full flex-row items-center justify-center ${
+                    loadingDetailKegiatan ? "opacity-50" : ""
+                  }`}
+                  onPress={handleEventSelesai}
+                  disabled={loadingDetailKegiatan}>
+                  <Text style={tw`text-white text-sm`}>Klik untukSelesai</Text>
                 </TouchableOpacity>
               </>
             )}
@@ -285,26 +355,37 @@ export default function DetailKegiatanScreen() {
               </Text>
             </View>
             {detailKegiatan?.subs_kegiatan?.map((subs) => (
-              <View
-                key={subs.subs_kegiatan_id}
-                style={tw`flex-row items-center justify-between bg-gray-200 p-2 py-2 rounded-md mt-3`}>
-                <Text style={tw`text-gray-600 text-sm`}>{subs.user?.nama}</Text>
-                {subs.is_verified === "Y" ? (
-                  <Text style={tw`text-blue-500 italic text-sm`}>Diterima</Text>
-                ) : (
-                  <>
-                    {status === "Verified" && (
-                      <TouchableOpacity
-                        style={tw`bg-blue-500 px-3 py-1 rounded-md`}
-                        onPress={() =>
-                          handleVerifikasi(subs.subs_kegiatan_id || 0)
-                        }>
-                        <Text style={tw`text-white text-xs`}>Verifikasi</Text>
-                      </TouchableOpacity>
-                    )}
-                  </>
-                )}
-              </View>
+              <TouchableOpacity
+                onPress={() => handleVerifikasi(subs.subs_kegiatan_id || 0)}
+                key={subs.subs_kegiatan_id}>
+                <View
+                  style={tw`flex-row items-center justify-between bg-gray-200 p-2 py-2 rounded-md mt-3 ${
+                    subs.is_verified === "X" ? "bg-red-200" : ""
+                  }`}>
+                  <Text style={tw`text-gray-600 text-sm`}>
+                    {subs.user?.nama}
+                  </Text>
+                  {subs.is_verified === "Y" ? (
+                    <Text style={tw`text-blue-500 italic text-sm`}>
+                      Diterima
+                    </Text>
+                  ) : subs.is_verified === "X" ? (
+                    <Text style={tw`text-red-500 italic text-sm`}>Ditolak</Text>
+                  ) : (
+                    <>
+                      {status === "Verified" && (
+                        <TouchableOpacity
+                          style={tw`bg-blue-500 px-3 py-1 rounded-md`}
+                          onPress={() =>
+                            handleVerifikasi(subs.subs_kegiatan_id || 0)
+                          }>
+                          <Text style={tw`text-white text-xs`}>Verifikasi</Text>
+                        </TouchableOpacity>
+                      )}
+                    </>
+                  )}
+                </View>
+              </TouchableOpacity>
             ))}
           </>
         </ScrollView>
@@ -317,6 +398,7 @@ export default function DetailKegiatanScreen() {
         setSelectedSubs={setSelectedSubs}
         isPertanyaan={isPertanyaan}
         handleConfirmVerifikasi={handleConfirmVerifikasi}
+        handleConfirmTolak={handleConfirmTolak}
       />
     </View>
   );

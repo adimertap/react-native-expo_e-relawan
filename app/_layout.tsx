@@ -48,9 +48,11 @@ function RootLayoutNav() {
         "/subcribeTopic",
         "/organisasi/kegiatan/tambah",
         "/organisasi/kegiatan/detail",
+        "/organisasi/profile/update",
         "/relawan/kegiatan/detail",
         "/relawan/kegiatan/daftar",
-        "/relawan/kegiatan/detailApply"
+        "/relawan/kegiatan/detailApply",
+        "/relawan/profile/update"
       ];
 
       if (validPaths.some((path) => pathname.startsWith(path))) {
@@ -102,7 +104,7 @@ function RootLayoutNav() {
           } else if (pathname.startsWith("/(tabs)/organisasi/profile")) {
             console.log("Redirecting to organisasi profile");
             router.replace("/(tabs)/organisasi/profile");
-          }
+          } 
         }
       } else {
         if (
@@ -140,6 +142,10 @@ function RootLayoutNav() {
         name="organisasi/kegiatan/tambah"
         options={{ headerShown: false }}
       />
+       <Stack.Screen
+        name="organisasi/profile/update"
+        options={{ headerShown: false }}
+      />
       <Stack.Screen
         name="organisasi/kegiatan/detail"
         options={{ headerShown: false }}
@@ -156,6 +162,10 @@ function RootLayoutNav() {
       <Stack.Screen name="relawan/history" options={{ headerShown: false }} />
       <Stack.Screen
         name="relawan/kegiatan/detailApply"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="relawan/profile/update"
         options={{ headerShown: false }}
       />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

@@ -1,7 +1,10 @@
 import ModalApply from "@/app/organisasi/kegiatan/modal/modalApply";
 import { useAuthContext } from "@/src/contexts/AuthContext";
 import { useFetchApplyKegiatan } from "@/src/hooks/Organisasi/useFetchApplyKegiatan";
-import { useVerifikasiKegiatan } from "@/src/hooks/Organisasi/useVerifikasiKegiatan";
+import {
+  useTolakKegiatan,
+  useVerifikasiKegiatan
+} from "@/src/hooks/Organisasi/useVerifikasiKegiatan";
 import { SubsKegiatanType } from "@/src/types/types";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
@@ -21,7 +24,9 @@ export default function ApplyKegiatanScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const { authState, logout } = useAuthContext();
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedSubs, setSelectedSubs] = useState<SubsKegiatanType | null>(null);
+  const [selectedSubs, setSelectedSubs] = useState<SubsKegiatanType | null>(
+    null
+  );
   const [isPertanyaan, setIsPertanyaan] = useState<string>("");
 
   const {
@@ -35,6 +40,11 @@ export default function ApplyKegiatanScreen() {
     loading: loadingVerifikasiKegiatan,
     error: errorVerifikasiKegiatan
   } = useVerifikasiKegiatan();
+  const {
+    tolakKegiatan,
+    loading: loadingTolakKegiatan,
+    error: errorTolakKegiatan
+  } = useTolakKegiatan();
   const [applyKegiatanList, setApplyKegiatanList] = useState<
     SubsKegiatanType[]
   >([]);
@@ -61,7 +71,10 @@ export default function ApplyKegiatanScreen() {
         setIsPertanyaan(subs.kegiatan.perlu_pertanyaan);
         setModalVisible(true);
       } else {
-        await verifikasiKegiatan(subs?.kegiatan?.kegiatan_id || 0, subs?.user_id || 0);
+        await verifikasiKegiatan(
+          subs?.kegiatan?.kegiatan_id || 0,
+          subs?.user_id || 0
+        );
         Alert.alert("Berhasil", "Relawan berhasil diverifikasi");
         await refetchApplyKegiatan();
         setModalVisible(false);
@@ -74,8 +87,26 @@ export default function ApplyKegiatanScreen() {
 
   const handleConfirmVerifikasi = async () => {
     try {
-      await verifikasiKegiatan(selectedSubs?.kegiatan?.kegiatan_id || 0, selectedSubs?.user_id || 0);
+      await verifikasiKegiatan(
+        selectedSubs?.kegiatan?.kegiatan_id || 0,
+        selectedSubs?.user_id || 0
+      );
       Alert.alert("Berhasil", "Relawan berhasil diverifikasi");
+      await refetchApplyKegiatan();
+      setModalVisible(false);
+      setSelectedSubs(null);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleConfirmTolak = async () => {
+    try {
+      await tolakKegiatan(
+        selectedSubs?.kegiatan?.kegiatan_id || 0,
+        selectedSubs?.user_id || 0
+      );
+      Alert.alert("Berhasil", "Relawan berhasil ditolak");
       await refetchApplyKegiatan();
       setModalVisible(false);
       setSelectedSubs(null);
@@ -137,11 +168,11 @@ export default function ApplyKegiatanScreen() {
               <Text style={tw`text-white text-sm ml-2 italic`}>Organisasi</Text>
             </View>
           </View>
-          <View style={tw`flex-row items-center`}>
+          {/* <View style={tw`flex-row items-center`}>
             <TouchableOpacity onPress={() => logout()}>
               <Ionicons name="log-out-outline" size={25} color="white" />
             </TouchableOpacity>
-          </View>
+          </View> */}
         </View>
       </View>
       <View style={tw`flex-row items-center justify-between px-5 mt-5`}>
@@ -200,6 +231,7 @@ export default function ApplyKegiatanScreen() {
         setSelectedSubs={setSelectedSubs}
         isPertanyaan={isPertanyaan}
         handleConfirmVerifikasi={handleConfirmVerifikasi}
+        handleConfirmTolak={handleConfirmTolak}
       />
     </View>
   );

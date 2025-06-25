@@ -13,12 +13,10 @@ export const useHooksProvinsi = () => {
       setLoading(true);
       setError(null);
       const response = await fetch(`${API_URL}/master/provinsi`);
-      console.log(response);
       if (!response.ok) throw new Error('Failed to fetch province data');
       const data = await response.json();
       const datas = data.data;
       setProvinsi(datas);
-
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {

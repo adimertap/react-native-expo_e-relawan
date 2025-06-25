@@ -9,6 +9,7 @@ interface ModalApplyProps {
   setSelectedSubs: (subs: any) => void;
   isPertanyaan: string;
   handleConfirmVerifikasi: () => void;
+  handleConfirmTolak: () => void;
 }
 
 export default function ModalApply({
@@ -17,9 +18,11 @@ export default function ModalApply({
   selectedSubs,
   setSelectedSubs,
   isPertanyaan,
-  handleConfirmVerifikasi
+  handleConfirmVerifikasi,
+  handleConfirmTolak
 }: ModalApplyProps) {
   const formatDate = (date: string) => {
+    if (!date) return "-";
     const dateObj = new Date(date);
     const day = dateObj.getDate().toString().padStart(2, "0");
     const month = (dateObj.getMonth() + 1).toString().padStart(2, "0");
@@ -39,7 +42,9 @@ export default function ModalApply({
         <View style={tw`bg-white rounded-t-3xl p-6 w-[100%] max-w-[400px]`}>
           <View style={tw`flex-row items-center justify-between`}>
             <Text style={tw`text-xl font-bold mb-4 mt-2 text-center`}>
-              Verifikasi Relawan
+              {selectedSubs?.is_verified === "N"
+                ? "Verifikasi Relawan"
+                : "Detail Relawan"}
             </Text>
             <TouchableOpacity onPress={() => setModalVisible(false)}>
               <Ionicons name="close-outline" size={25} color="black" />
@@ -82,24 +87,56 @@ export default function ModalApply({
                   </View>
                 </>
               )}
+              {selectedSubs?.rating !== 0 && (
+                <>
+                  <View style={tw`flex-row items-center justify-start mt-4`}>
+                    <Text style={tw`text-gray-600 font-sm mt-3`}>Rating: </Text>
+                    <View style={tw`flex-row items-center`}>
+                      {[...Array(selectedSubs?.rating)].map((_, index) => (
+                        <Ionicons
+                          key={index}
+                          name="star"
+                          size={16}
+                          color="#FFD700"
+                          style={tw`ml-1 mt-3`}
+                        />
+                      ))}
+                    </View>
+                  </View>
+                  <View style={tw`flex-row items-center justify-start mt-1`}>
+                    <Text style={tw`text-gray-600 font-sm mt-3`}>Review: </Text>
+                    <Text style={tw`text-blue-800 font-sm mt-3 italic`}>
+                      {selectedSubs?.review || "Tidak ada review"}
+                    </Text>
+                  </View>
+                </>
+              )}
             </View>
           )}
           <View style={tw`h-0.4 bg-gray-200 mt-3 mb-3`} />
-          <View style={tw`flex-row justify-end gap-3 mt-2 mb-5`}>
-            <Pressable
-              style={tw`bg-gray-300 px-4 py-2 rounded-lg`}
-              onPress={() => {
-                setModalVisible(false);
-                setSelectedSubs(null);
-              }}>
-              <Text style={tw`text-gray-700`}>Batal</Text>
-            </Pressable>
-            <Pressable
-              style={tw`bg-blue-500 px-4 py-3 rounded-lg`}
-              onPress={handleConfirmVerifikasi}>
-              <Text style={tw`text-white font-bold`}>Verifikasi Relawan</Text>
-            </Pressable>
-          </View>
+
+          {selectedSubs?.is_verified === "N" && (
+            <View style={tw`flex-row justify-end gap-3 mt-2 mb-5`}>
+              <Pressable
+                style={tw`bg-gray-300 px-4 py-2 rounded-lg`}
+                onPress={() => {
+                  setModalVisible(false);
+                  setSelectedSubs(null);
+                }}>
+                <Text style={tw`text-gray-700`}>Batal</Text>
+              </Pressable>
+              <Pressable
+                style={tw`bg-red-500 px-4 py-3 rounded-lg`}
+                onPress={handleConfirmTolak}>
+                <Text style={tw`text-white font-bold`}>Tolak</Text>
+              </Pressable>
+              <Pressable
+                style={tw`bg-blue-500 px-4 py-3 rounded-lg`}
+                onPress={handleConfirmVerifikasi}>
+                <Text style={tw`text-white font-bold`}>Verifikasi Relawan</Text>
+              </Pressable>
+            </View>
+          )}
         </View>
       </View>
     </Modal>

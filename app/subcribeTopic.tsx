@@ -1,9 +1,10 @@
 import { useAuthContext } from "@/src/contexts/AuthContext";
 import { useFetchTopic } from "@/src/hooks/Master/useFetchTopic";
 import { useSubscribeTopic } from "@/src/hooks/Master/useSubscribeTopic";
+import { useFetchSubscribeTopic } from "@/src/hooks/Relawan/useFetchSubscribeTopic";
 import { TopicType } from "@/src/types/types";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import tw from "twrnc";
 
@@ -15,8 +16,21 @@ const SubcribeTopic = () => {
     loading: loadingSubmit,
     error: errorSubmit
   } = useSubscribeTopic();
+  const { fetchSubscribeTopic, loading: loadingSubscribeTopic, error: errorSubscribeTopic, subscribeTopic } = useFetchSubscribeTopic();
   const router = useRouter();
   const { logout } = useAuthContext();
+
+  useEffect(() => {
+    fetchSubscribeTopic();
+  }, [fetchSubscribeTopic]);
+
+  // Pre-select topics when subscribeTopic data is available
+  useEffect(() => {
+    if (subscribeTopic && subscribeTopic.rows && subscribeTopic.rows.length > 0) {
+      const subscribedTopicNames = subscribeTopic.rows.map((sub: any) => sub.topic?.topic_nama).filter(Boolean);
+      setSelected(subscribedTopicNames);
+    }
+  }, [subscribeTopic]);
 
   const toggleTopic = (topic: string) => {
     setSelected((prev) =>
@@ -43,13 +57,20 @@ const SubcribeTopic = () => {
     router.replace("/login");
   };
 
+  // Check if user has existing subscriptions
+  const hasExistingSubscriptions = subscribeTopic && subscribeTopic.rows && subscribeTopic.rows.length > 0;
+
+  if (loadingSubscribeTopic) {
+    return <Text>Loading...</Text>;
+  }
+
   return (
-    <View style={tw`flex-1 bg-white p-6 pt-12`}>
-      <View style={tw`flex-row justify-between items-center mx-2 mt-2`}>
+    <View style={tw`flex-1 bg-white p-8 pt-12`}>
+      <View style={tw`flex-row justify-between items-center mx-1 mt-4 ml-1`}>
         <TouchableOpacity
           style={tw`absolute top-4 cursor-pointer`}
           onPress={() => handleLogout()}>
-          <Text style={tw`text-gray-400 font-medium text-sm`}>Logout</Text>
+          <Text style={tw`text-red-500 font-medium text-sm`}>Logout</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={tw`absolute top-4 right-6 cursor-pointer`}
@@ -59,7 +80,9 @@ const SubcribeTopic = () => {
       </View>
 
       <Text style={tw`text-2xl font-bold mb-10 mt-25`}>
-        Pilih 3 topik yang kamu sukai,{" "}
+        {hasExistingSubscriptions 
+          ? "Update topik yang kamu sukai, " 
+          : "Pilih 3 topik yang kamu sukai, "}
         <Text style={tw`text-blue-600`}>kamu bisa ganti pilihan nya nanti</Text>
       </Text>
       <ScrollView
@@ -101,7 +124,7 @@ const SubcribeTopic = () => {
         disabled={selected.length < 3 || loadingTopic || loadingSubmit}
         onPress={handleSubmit}>
         <Text style={tw`text-white font-bold`}>
-          {loadingSubmit ? "Loading..." : "Next"}
+          {loadingSubmit ? "Loading..." : hasExistingSubscriptions ? "Update" : "Next"}
         </Text>
       </TouchableOpacity>
     </View>
