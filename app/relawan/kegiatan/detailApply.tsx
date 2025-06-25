@@ -111,8 +111,7 @@ export default function DetailApplyKegiatanRelawanScreen() {
                 <Text style={tw`text-white text-xs ml-2`}>Kalender</Text>
               </TouchableOpacity>
             )}
-          {applyDetailKegiatan?.kegiatan?.status === "Selesai" &&
-            applyDetailKegiatan?.rating === 0 && (
+          {applyDetailKegiatan?.kegiatan?.status === "Selesai" &&  (
               <TouchableOpacity
                 onPress={() =>
                   handleReviewKegiatan(
@@ -198,8 +197,7 @@ export default function DetailApplyKegiatanRelawanScreen() {
               </View>
             </>
           )}
-          {applyDetailKegiatan?.kegiatan?.status === "Selesai" &&
-            applyDetailKegiatan?.rating !== 0 && (
+          {applyDetailKegiatan?.kegiatan?.status === "Selesai" && applyDetailKegiatan?.rating !== 0 && applyDetailKegiatan?.rating !== null && (
               <>
                 <View style={tw`h-0.5 bg-gray-200 mt-8 mb-2`} />
                 <View style={tw`flex-row flex items-center justify-start mt-1`}>
