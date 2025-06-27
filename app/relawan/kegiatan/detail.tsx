@@ -7,7 +7,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   RefreshControl,
   ScrollView,
@@ -129,7 +128,7 @@ export default function DetailKegiatanRelawanScreen() {
           </TouchableOpacity>
         </View>
       </View>
-      <View style={tw`p-6 pt-3 mt-4`}>
+      <View style={tw`p-6 pt-2 mt-1`}>
         <View style={tw`flex-row items-center justify-between`}>
           <Text
             style={tw`text-white text-xs px-2 py-1 rounded-2xl ${
@@ -138,12 +137,12 @@ export default function DetailKegiatanRelawanScreen() {
               status === "Selesai" ? "bg-green-500" : ""
             } 
             }`}>
-            {status === "Verified" && "Daftar Sekarang Juga!"}
-            {status === "Berjalan" && "Sedang Berjalan"}
-            {status === "Selesai" && "Selesai"}
+            {status === "Verified" ? "Daftar Sekarang Juga!" : 
+             status === "Berjalan" ? "Sedang Berjalan" : 
+             status === "Selesai" ? "Selesai" : ""}
           </Text>
         </View>
-        <View style={tw`mt-10`}>
+        <View style={tw`mt-3`}>
           <Text style={tw`text-black text-lg font-medium`}>{namaKegiatan}</Text>
           <Text style={tw`text-gray-500 text-sm mt-1`}>
             Topic: {topic}, Event: {jenisKegiatan}
@@ -166,9 +165,11 @@ export default function DetailKegiatanRelawanScreen() {
             <Text style={tw`text-gray-700 font-sm`}>
               {formatDate(startDate)} - {formatDate(endDate)}
             </Text>
-            <Text style={tw`text-red-500 text-sm italic`}>
-              Deadline: {formatDate(deadline)}
-            </Text>
+            {(status === "Draft" || status === "Verified") && (
+              <Text style={tw`text-red-500 text-sm italic`}>
+                Deadline: {formatDate(deadline)}
+              </Text>
+            )}
           </View>
           <Text style={tw`text-black font-sm mt-4`}>
             {provinsi}, {kabupaten}
@@ -201,10 +202,10 @@ export default function DetailKegiatanRelawanScreen() {
           </View>
           <View style={tw`h-0.5 bg-gray-200 mt-4 mb-2`} />
           <Text style={tw`text-gray-600 font-sm mt-3`}>
-            Deskripsi {deskripsiKegiatan}
+            Deskripsi: {deskripsiKegiatan}
           </Text>
           <Text style={tw`text-gray-600 font-sm mt-3`}>
-            Tugas {tugasRelawan}
+            Tugas: {tugasRelawan}
           </Text>
           <View style={tw`h-0.5 bg-gray-200 mt-3 mb-2`} />
           <Text style={tw`text-blue-600 text-sm mt-2 italic`}>
@@ -215,7 +216,7 @@ export default function DetailKegiatanRelawanScreen() {
               {errorApplyKegiatan}
             </Text>
           )}
-          {status === "Verified" && (
+          {status === "Verified" && detailKegiatan?.subs_kegiatan?.length === 0 && (
             <>
               <TouchableOpacity
                 style={tw`bg-blue-600 rounded-full px-5 py-3 mt-10`}
@@ -232,15 +233,18 @@ export default function DetailKegiatanRelawanScreen() {
                     handleDaftar(Number(id));
                   }
                 }}>
-                {loadingApplyKegiatan ? (
-                  <ActivityIndicator size="small" color="white" />
-                ) : (
-                  <Text style={tw`text-white text-sm text-center font-bold`}>
+               <Text style={tw`text-white text-sm text-center font-bold`}>
                     Daftar Sekarang!
                   </Text>
-                )}
               </TouchableOpacity>
             </>
+          )}
+          {status === "Verified" &&
+            detailKegiatan?.subs_kegiatan?.length &&
+            detailKegiatan?.subs_kegiatan?.length > 0 && (
+              <Text style={tw`text-blue-500 p-5 text-sm text-center italic mt-10`}>
+                Anda Sudah Mendaftar! Mohon tunggu konfirmasi dari pihak organisasi.
+            </Text>
           )}
           {status === "Berjalan" && (
             <Text style={tw`text-red-500 text-sm text-center italic mt-10`}>

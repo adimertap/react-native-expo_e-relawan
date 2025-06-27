@@ -115,8 +115,8 @@ export default function ProfileRelawanScreen() {
       <View style={tw`h-[40%] bg-blue-600`}>
         <View style={tw`flex-1 items-center justify-center`}>
           <Image
-            source={require("@/assets/hipo.png")}
-            style={tw`w-24 h-24 rounded-full`}
+            source={require("@/assets/boy.png")}
+            style={tw`w-22 h-22 rounded-full`}
           />
           <Text style={tw`text-white text-xl font-bold mt-4`}>
             {authState?.nama}
@@ -175,13 +175,6 @@ export default function ProfileRelawanScreen() {
             <Text style={tw`text-black text-sm font-medium`}>Alamat</Text>
             <Text style={tw`text-gray-500 text-sm italic`}>
               {profile?.alamat || "-"}
-            </Text>
-          </View>
-          <View style={tw`h-0.4 bg-gray-100 mt-2 mb-2`} />
-          <View style={tw`flex-row items-center justify-between`}>
-            <Text style={tw`text-black text-sm font-medium`}>Profesi</Text>
-            <Text style={tw`text-gray-500 text-sm italic`}>
-              {profile?.profesi || "-"}
             </Text>
           </View>
           <View style={tw`h-0.4 bg-gray-100 mt-2 mb-2`} />

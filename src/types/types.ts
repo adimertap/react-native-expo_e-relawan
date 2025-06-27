@@ -84,6 +84,7 @@ export interface KegiatanType {
   tugas_relawan?: string;
   kriteria_relawan?: string;
   active?: string;
+  reject_note?: string;
   status?: string;
   is_verified?: string;
   verified_at?: string;

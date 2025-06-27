@@ -70,7 +70,7 @@ export default function HomeScreen() {
           style={tw`flex-row items-center justify-between px-6 mr-1 py-8 mt-12`}>
           <View style={tw`flex-row items-center`}>
             <Image
-              source={require("@/assets/hipo.png")}
+              source={require("@/assets/group.png")}
               style={tw`w-10 h-10`}
             />
             <View style={tw`flex-col ml-2`}>
@@ -172,10 +172,10 @@ export default function HomeScreen() {
               pathname: "/organisasi/kegiatan/detail",
               params: { id: kegiatan.kegiatan_id }
             })}
-            style={tw`bg-white border border-gray-200 shadow-md rounded-3xl px-3 py-3 mb-6 border border-gray-100`}>
+            style={tw`bg-white border border-gray-200 shadow-md rounded-3xl px-3 py-3 mb-6 border border-gray-100 ${kegiatan.status === "Rejected" ? "bg-red-200" : kegiatan.status === "Selesai" ? "bg-blue-200" : "bg-white"}`}>
             <View
               key={kegiatan.kegiatan_id}
-              style={tw`bg-white px-2 py-2 mr-2`}>
+              style={tw`bg-white px-2 py-2 mr-2 ${kegiatan.status === "Rejected" ? "bg-red-200" : kegiatan.status === "Selesai" ? "bg-blue-200" : "bg-white"}`}>
               <View style={tw`flex-row items-center mb-3`}>
                 <View style={tw`bg-gray-400 rounded-md px-2 py-1`}>
                   <Text style={tw`text-white text-xs`}>
@@ -210,6 +210,12 @@ export default function HomeScreen() {
                       Verified
                     </Text>
                   )}
+                  {kegiatan.status === "Rejected" && (
+                    <Text
+                      style={tw`bg-red-500 text-white text-xs px-2 py-1 rounded-2xl`}>
+                      Ditolak
+                    </Text>
+                  )}
                   {kegiatan.status === "Berjalan" && (
                     <Text
                       style={tw`bg-blue-500 text-white text-xs px-2 py-1 rounded-2xl`}>
@@ -236,12 +242,12 @@ export default function HomeScreen() {
               </Text>
               <View style={tw`flex-row items-center mt-2`}>
                 <Text style={tw`text-red-500 text-xs italic`}>
-                  {kegiatan.status === "Draft" &&
-                    "Menunggu persetujuan dari Admin"}
+                  {kegiatan.status === "Draft" && "Menunggu persetujuan dari Admin"}
                   {kegiatan.status === "Verified" && "Terverifikasi"}
                   {kegiatan.status === "Berjalan" && "Sedang Berjalan"}
                   {kegiatan.status === "Selesai" && "Selesai"}
                   {kegiatan.status === "Cancelled" && "Dibatalkan oleh Admin"}
+                  {kegiatan.status === "Rejected" && "Ditolak oleh Admin"}
                 </Text>
               </View>
             </View>

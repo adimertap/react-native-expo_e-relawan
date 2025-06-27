@@ -207,7 +207,7 @@ export default function HomeRelawanScreen() {
                   {kegiatan.status === "Verified" && (
                     <Text
                       style={tw`bg-blue-500 text-white text-xs px-2 py-1 rounded-2xl`}>
-                      Aktif
+                      Daftar! 
                     </Text>
                   )}
                   {kegiatan.status === "Run" && (
@@ -216,10 +216,16 @@ export default function HomeRelawanScreen() {
                       Berjalan
                     </Text>
                   )}
-                  {kegiatan.status === "Completed" && (
+                  {kegiatan.status === "Selesai" && (
                     <Text
                       style={tw`bg-green-500 text-white text-xs px-2 py-1 rounded-2xl`}>
                       Selesai
+                    </Text>
+                  )}
+                  {kegiatan.status === "Berjalan" && (
+                    <Text
+                      style={tw`bg-blue-500 text-white text-xs px-2 py-1 rounded-2xl`}>
+                      Berjalan
                     </Text>
                   )}
                 </View>
@@ -235,7 +241,7 @@ export default function HomeRelawanScreen() {
                 <Text style={tw`text-red-500 text-xs italic`}>
                   {kegiatan.status === "Verified" && "Daftar Sekarang Juga!"}
                   {kegiatan.status === "Run" && "Sedang Berjalan"}
-                  {kegiatan.status === "Completed" && "Selesai"}
+                  {kegiatan.status === "Berjalan" && "Sedang Berjalan"}
                 </Text>
               </View>
             </View>

@@ -10,6 +10,7 @@ interface ModalApplyProps {
   subs_kegiatan_id: number;
   nama_kegiatan: string;
   setSelectedSubs: (subs: any) => void;
+  refetch?: () => void;
 }
 
 export default function ModalReview({
@@ -18,6 +19,7 @@ export default function ModalReview({
   subs_kegiatan_id,
   nama_kegiatan,
   setSelectedSubs,
+  refetch,
 }: ModalApplyProps) {
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState("");
@@ -31,6 +33,9 @@ export default function ModalReview({
         setSelectedSubs(null);
         setRating(0);
         setReview("");
+        if (refetch) {
+          refetch();
+        }
     } catch (error) {
       console.log(error);
       Alert.alert("Error", "Terjadi kesalahan saat mengirim review");

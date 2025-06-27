@@ -210,7 +210,7 @@ export default function DetailKegiatanScreen() {
           </TouchableOpacity>
         </View>
       </View>
-      <View style={tw`p-6 pt-3 mt-4`}>
+      <View style={tw`p-5 pt-2 mt-2`}>
         <View style={tw`flex-row items-center justify-between`}>
           <Text
             style={tw`text-white text-xs px-2 py-1 rounded-2xl ${
@@ -219,12 +219,15 @@ export default function DetailKegiatanScreen() {
               status === "Berjalan" ? "bg-blue-500" : ""
             } ${status === "Selesai" ? "bg-green-500" : ""} ${
               status === "Cancelled" ? "bg-red-500" : ""
+            } ${status === "Rejected" ? "bg-red-500" : ""} ${
+              status === "Selesai" ? "bg-green-500" : ""
             }`}>
             {status === "Draft" && "Menunggu Persetujuan"}
             {status === "Verified" && "Terverifikasi"}
             {status === "Berjalan" && "Sedang Berjalan"}
             {status === "Selesai" && "Kegiatan Selesai"}
             {status === "Cancelled" && "Dibatalkan oleh Admin"}
+            {status === "Rejected" && "Ditolak oleh Admin"}
           </Text>
           <View style={tw`flex-row items-center justify-end `}>
             {status === "Draft" && (
@@ -281,7 +284,17 @@ export default function DetailKegiatanScreen() {
             )}
           </View>
         </View>
-        <View style={tw`mt-7`}>
+        {status === "Rejected" && (
+          <View style={tw`mt-7`}>
+            <Text style={tw`text-red-500 text-sm italic`}>
+              Kegiatan ditolak oleh admin karena:
+            </Text>
+            <Text style={tw`text-red-500 text-sm italic`}>
+             {detailKegiatan?.reject_note}
+            </Text>
+          </View>
+        )}
+        <View style={tw`mt-3`}>
           <Text style={tw`text-black text-lg font-medium`}>{namaKegiatan}</Text>
           <Text style={tw`text-gray-500 text-sm mt-1`}>
             Topic: {topic}, Event: {jenisKegiatan}
@@ -304,9 +317,11 @@ export default function DetailKegiatanScreen() {
             <Text style={tw`text-gray-700 font-sm`}>
               {formatDate(startDate)} - {formatDate(endDate)}
             </Text>
-            <Text style={tw`text-red-500 text-sm italic`}>
-              Deadline: {formatDate(deadline)}
-            </Text>
+            {(status === "Draft" || status === "Verified") && (
+              <Text style={tw`text-red-500 text-sm italic`}>
+                Deadline: {formatDate(deadline)}
+              </Text>
+            )}
           </View>
           <Text style={tw`text-black font-sm mt-4`}>
             {provinsi}, {kabupaten}

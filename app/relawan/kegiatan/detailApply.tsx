@@ -22,7 +22,8 @@ export default function DetailApplyKegiatanRelawanScreen() {
   const {
     applyDetailKegiatan,
     loading: loadingApplyDetailKegiatan,
-    error: errorApplyDetailKegiatan
+    error: errorApplyDetailKegiatan,
+    refetch: refetchApplyDetailKegiatan
   } = useFetchApplyDetailKegiatan(Number(id));
   const [namaKegiatan, setNamaKegiatan] = useState<string>("");
   const [topic, setTopic] = useState<string>("");
@@ -33,6 +34,7 @@ export default function DetailApplyKegiatanRelawanScreen() {
   const [kabupaten, setKabupaten] = useState<string>("");
   const [provinsi, setProvinsi] = useState<string>("");
   const [status, setStatus] = useState<string>("");
+  const [statusKegiatan, setStatusKegiatan] = useState<string>("");
   const {
     applyKegiatan,
     loading: loadingApplyKegiatan,
@@ -54,6 +56,7 @@ export default function DetailApplyKegiatanRelawanScreen() {
       setKabupaten(applyDetailKegiatan.kegiatan?.kabupaten?.kabupaten || "");
       setProvinsi(applyDetailKegiatan.kegiatan?.provinsi?.provinsi || "");
       setStatus(applyDetailKegiatan.is_verified || "");
+      setStatusKegiatan(applyDetailKegiatan.kegiatan?.status || "");
     }
   }, [applyDetailKegiatan]);
 
@@ -103,15 +106,14 @@ export default function DetailApplyKegiatanRelawanScreen() {
           </Text>
           <View style={tw`h-0.5 bg-gray-200 mt-3 mb-2`} />
           {/* Tambah button add to calendar */}
-          {status === "Y" &&
-            applyDetailKegiatan?.kegiatan?.status !== "Selesai" && (
+          {status === "Y" && applyDetailKegiatan?.kegiatan?.status !== "Selesai" && (
               <TouchableOpacity
                 style={tw`bg-blue-500 rounded-full px-4 py-2 flex-row items-center`}>
                 <Ionicons name="calendar-outline" size={16} color="white" />
                 <Text style={tw`text-white text-xs ml-2`}>Kalender</Text>
               </TouchableOpacity>
             )}
-          {applyDetailKegiatan?.kegiatan?.status === "Selesai" &&  (
+          {(applyDetailKegiatan?.kegiatan?.status === "Selesai" && applyDetailKegiatan?.rating === null) && (
               <TouchableOpacity
                 onPress={() =>
                   handleReviewKegiatan(
@@ -132,6 +134,9 @@ export default function DetailApplyKegiatanRelawanScreen() {
           <Text style={tw`text-black text-lg font-medium`}>{namaKegiatan}</Text>
           <Text style={tw`text-gray-500 text-sm mt-1`}>
             Topic: {topic}, Event: {jenisKegiatan}
+          </Text>
+          <Text style={tw`text-blue-500 text-sm mt-1`}>
+            Status: {applyDetailKegiatan?.kegiatan?.status}
           </Text>
         </View>
         <View style={tw`h-0.5 bg-gray-200 mt-5 mb-2`} />
@@ -229,6 +234,7 @@ export default function DetailApplyKegiatanRelawanScreen() {
           subs_kegiatan_id={selectedSubs || 0}
           nama_kegiatan={namaKegiatan}
           setSelectedSubs={setSelectedSubs}
+          refetch={() => refetchApplyDetailKegiatan(Number(id))}
         />
       </View>
     </View>

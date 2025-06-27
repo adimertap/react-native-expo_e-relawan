@@ -128,7 +128,7 @@ export default function UpdateProfileScreen() {
           bounces={false}
           contentContainerStyle={tw`pb-20`}
         >
-          <View style={tw`w-full mb-3`}>
+          <View style={tw`w-full mb-2`}>
             <TextInput
               style={tw`text-black bg-white py-4 px-4 rounded-full w-full border border-gray-200`}
               placeholder="Nama Organisasi (*)"
@@ -139,7 +139,7 @@ export default function UpdateProfileScreen() {
             />
           </View>
 
-          <View style={tw`w-full mb-3`}>
+          <View style={tw`w-full mb-0`}>
             <DropdownComponent
               data={provinsi.map((item) => ({
                 label: item.provinsi,
@@ -155,7 +155,7 @@ export default function UpdateProfileScreen() {
             />
           </View>
 
-          <View style={tw`w-full mb-3`}>
+          <View style={tw`w-full mb-0`}>
             <DropdownComponent
               data={kabupaten.map((item) => ({
                 label: item.kabupaten,
@@ -224,7 +224,7 @@ export default function UpdateProfileScreen() {
               onChangeText={setWebsite}
             />
           </View>
-
+         
           <View style={tw`w-full mb-15 mt-5`}>
             <TouchableOpacity 
               style={tw`bg-blue-600 py-4 px-4 rounded-full w-full ${updating ? 'opacity-50' : ''}`}

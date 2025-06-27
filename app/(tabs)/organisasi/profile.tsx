@@ -119,7 +119,7 @@ export default function ProfileScreen() {
       <View style={tw`h-[40%] bg-gray-600`}>
         <View style={tw`flex-1 items-center justify-center`}>
           <Image
-            source={require("@/assets/hipo.png")}
+            source={require("@/assets/group.png")}
             style={tw`w-24 h-24 rounded-full`}
           />
           <Text style={tw`text-white text-xl font-bold mt-4`}>
@@ -207,8 +207,8 @@ export default function ProfileScreen() {
 
           <TouchableOpacity
             onPress={() => handleModalUpdateProfile()}
-            style={tw`bg-white border border-gray-400 rounded-lg p-2 mt-5 flex-row items-center justify-center`}>
-            <Text style={tw`text-black text-sm font-medium`}>
+            style={tw`bg-white border border-blue-500 rounded-lg p-2 mt-5 flex-row items-center justify-center`}>
+            <Text style={tw`text-blue-500 text-sm font-medium`}>
               Update Profile
             </Text>
           </TouchableOpacity>

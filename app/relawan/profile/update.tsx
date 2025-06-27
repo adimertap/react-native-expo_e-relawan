@@ -31,7 +31,6 @@ export default function UpdateProfileRelawanScreen() {
   const [email, setEmail] = useState<string>("");
   const [phone, setPhone] = useState<string>("");
   const [alamat, setAlamat] = useState<string>("");
-  const [profesi, setProfesi] = useState<string>("");
 
   // Province and district
   const { provinsi, loading: loadingProvinsi } = useHooksProvinsi();
@@ -48,7 +47,6 @@ export default function UpdateProfileRelawanScreen() {
       setAlamat(profile?.alamat || "");
       setSelectedProvinsi(profile?.provinsi_id || null);
       setSelectedKabupaten(profile?.kabupaten_id || null);
-      setProfesi(profile?.profesi || "")
     }
   }, [profile]);
 
@@ -65,7 +63,6 @@ export default function UpdateProfileRelawanScreen() {
       alamat || "",
       selectedKabupaten || undefined,
       selectedProvinsi || undefined,
-      profesi
     );
 
     if (result.success) {
@@ -200,17 +197,6 @@ export default function UpdateProfileRelawanScreen() {
               onChangeText={setAlamat}
             />
           </View>
-          <View style={tw`w-full mb-3`}>
-            <TextInput
-              style={tw`text-black bg-white py-4 px-4 rounded-full w-full border border-gray-200`}
-              placeholder="Profesi"
-              placeholderTextColor="gray"
-              autoCapitalize="none"
-              value={profesi}
-              onChangeText={setProfesi}
-            />
-          </View>
-
           <View style={tw`w-full mb-15 mt-5`}>
             <TouchableOpacity 
               style={tw`bg-blue-600 py-4 px-4 rounded-full w-full ${updating ? 'opacity-50' : ''}`}

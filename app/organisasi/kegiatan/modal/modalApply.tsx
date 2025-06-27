@@ -87,7 +87,7 @@ export default function ModalApply({
                   </View>
                 </>
               )}
-              {selectedSubs?.rating !== 0 && (
+              {(selectedSubs?.rating !== null || selectedSubs?.review !== null) && (
                 <>
                   <View style={tw`flex-row items-center justify-start mt-4`}>
                     <Text style={tw`text-gray-600 font-sm mt-3`}>Rating: </Text>

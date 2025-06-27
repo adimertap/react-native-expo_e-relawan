@@ -50,7 +50,7 @@
 //           style={tw`flex-row items-center justify-between px-6 mr-1 py-8 mt-12`}>
 //           <View style={tw`flex-row items-center`}>
 //             <Image
-//               source={require("@/assets/hipo.png")}
+//               source={require("@/assets/group.png")}
 //               style={tw`w-10 h-10`}
 //             />
 //             <View style={tw`flex-col`}>
