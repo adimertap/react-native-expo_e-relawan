@@ -19,6 +19,7 @@ const Signup = () => {
   const [namaLengkap, setNamaLengkap] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [selectedJenisKelamin, setSelectedJenisKelamin] = useState("");
+  const [alamat, setAlamat] = useState("");
   // Hooks
   const { provinsi, loading: loadingProvinsi, error: errorProvinsi } = useHooksProvinsi();
   const { kabupaten, loading: loadingKabupaten, error: errorKabupaten } = useHooksKabupaten(selectedProvinsi);
@@ -34,7 +35,8 @@ const Signup = () => {
       email, password,
       phone, jenis_kelamin: selectedJenisKelamin,
       kabupaten_id: selectedKabupaten,
-      provinsi_id: selectedProvinsi
+      provinsi_id: selectedProvinsi,
+      alamat
     });
     if (errorRegister) {
       Alert.alert('Error', errorRegister);
@@ -165,6 +167,16 @@ const Signup = () => {
             loading={loadingProvinsi}
           />
         </View>
+        <View style={tw`mb-3`}>
+            <TextInput
+              style={tw`border border-gray-200 rounded-full px-4 py-4 bg-white text-black`}
+              placeholder="Alamat"
+              keyboardType="default"
+              autoCapitalize="none"
+              onChangeText={(text) => setAlamat(text)}
+              value={alamat}
+            />
+          </View>
       </View>
       <View style={tw`justify-center items-center mt-5`}>
         <TouchableOpacity
