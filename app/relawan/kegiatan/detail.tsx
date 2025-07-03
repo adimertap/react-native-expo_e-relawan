@@ -1,8 +1,8 @@
 import { useAuthContext } from "@/src/contexts/AuthContext";
 import { useDeleteKegiatan } from "@/src/hooks/Organisasi/useDeleteKegiatan";
-import { useFetchDetailKegiatan } from "@/src/hooks/Organisasi/useFetchDetailKegiatan";
 import { useFetchKegiatanSelf } from "@/src/hooks/Organisasi/useFetchKegiatanSelf";
 import { useApplyKegiatan } from "@/src/hooks/Relawan/useApplyKegiatan";
+import { useFetchDetailKegiatanRelawan } from "@/src/hooks/Relawan/useFetchDetailKegiatanRelawan";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -25,7 +25,7 @@ export default function DetailKegiatanRelawanScreen() {
     detailKegiatan,
     loading: loadingDetailKegiatan,
     error: errorDetailKegiatan
-  } = useFetchDetailKegiatan(Number(id));
+  } = useFetchDetailKegiatanRelawan(Number(id));
   const {
     deleteKegiatan,
     loading: loadingDeleteKegiatan,

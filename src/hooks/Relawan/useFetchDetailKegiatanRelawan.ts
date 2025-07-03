@@ -1,17 +1,27 @@
 // import { API_URL } from '@env';
 import { API_URL } from '@/src/constants/env';
+import { useAuthContext } from '@/src/contexts/AuthContext';
 import { KegiatanType } from '@/src/types/types';
 import { useEffect, useState } from 'react';
 
-export const useFetchDetailKegiatan = (id: number) => {
+export const useFetchDetailKegiatanRelawan = (id: number) => {
   const [detailKegiatan, setDetailKegiatan] = useState<KegiatanType>();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);  
+  const [error, setError] = useState<string | null>(null);
+  const { authState } = useAuthContext();
   const fetchDetailKegiatan = async (id: number) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(`${API_URL}/mobile/kegiatan/${id}/detail`);
+      const response = await fetch(`${API_URL}/mobile/relawan/kegiatan/detail/${id}/v2`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authState?.token}`,
+          },
+        }
+      );
       
       if (!response.ok) {
         throw new Error('Failed to fetch detail kegiatan data');
