@@ -59,10 +59,10 @@ export default function ModalApply({
               <Text style={tw`text-gray-700 mb-2`}>
                 Jenis Kelamin: {selectedSubs.user?.jenis_kelamin || ""}
               </Text>
-              <Text style={tw`text-gray-700 mb-2`}>
+              {/* <Text style={tw`text-gray-700 mb-2`}>
                 Tanggal Lahir:{" "}
                 {formatDate(selectedSubs.user?.tanggal_lahir || "")}
-              </Text>
+              </Text> */}
               <Text style={tw`text-gray-700 mb-2`}>
                 Alamat: {selectedSubs.user?.alamat || ""}
               </Text>

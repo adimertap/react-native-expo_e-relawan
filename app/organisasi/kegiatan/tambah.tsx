@@ -246,12 +246,10 @@ export default function AddKegiatanScreen() {
   return (
     <View style={tw`flex-1 bg-gray-50`}>
       <View style={tw`bg-gray-600 rounded-b-3xl mb-3 py-1`}>
-        <View
-          style={tw`flex-row items-center justify-between px-6 mr-1 py-8 mt-12`}>
+        <View style={tw`flex-row items-center justify-between px-6 mr-1 py-8 mt-12`}>
           <TouchableOpacity onPress={() => router.back()}>
             <Ionicons name="chevron-back-outline" size={25} color="white" />
           </TouchableOpacity>
-
           <View style={tw`flex-col items-center absolute left-0 right-0`}>
             <Text style={tw`text-white text-sm font-bold`}>
               {isEdit ? "Edit Kegiatan" : "Tambah Kegiatan"}
