@@ -16,7 +16,9 @@ interface KegiatanData {
   kriteria_relawan: string;
   deskripsi_kegiatan: string;
   photo?: string;
+  dokumen_pendukung?: string;
   perlu_pertanyaan?: boolean;
+  deadline?: string;
 }
 
 export const useSubmitKegiatan = () => {
@@ -31,7 +33,7 @@ export const useSubmitKegiatan = () => {
 
       // Validate required fields
       if (!data.nama_kegiatan || !data.topic_id || !data.jenis_kegiatan_id || 
-          !data.start_date || !data.end_date || !data.location) {
+          !data.start_date || !data.end_date || !data.location || !data.dokumen_pendukung) {
         throw new Error('Semua field wajib diisi');
       }
 

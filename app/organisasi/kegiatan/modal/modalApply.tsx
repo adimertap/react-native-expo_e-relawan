@@ -1,5 +1,15 @@
+import { useRatingRelawan } from "@/src/hooks/Organisasi/useRatingRelawan";
 import { Ionicons } from "@expo/vector-icons";
-import { Modal, Pressable, Text, TouchableOpacity, View } from "react-native";
+import { useState } from "react";
+import {
+  Alert,
+  Modal,
+  Pressable,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from "react-native";
 import tw from "twrnc";
 
 interface ModalApplyProps {
@@ -10,6 +20,7 @@ interface ModalApplyProps {
   isPertanyaan: string;
   handleConfirmVerifikasi: () => void;
   handleConfirmTolak: () => void;
+  refetch: () => void;
 }
 
 export default function ModalApply({
@@ -19,16 +30,38 @@ export default function ModalApply({
   setSelectedSubs,
   isPertanyaan,
   handleConfirmVerifikasi,
-  handleConfirmTolak
+  handleConfirmTolak,
+  refetch
 }: ModalApplyProps) {
-  const formatDate = (date: string) => {
-    if (!date) return "-";
-    const dateObj = new Date(date);
-    const day = dateObj.getDate().toString().padStart(2, "0");
-    const month = (dateObj.getMonth() + 1).toString().padStart(2, "0");
-    const year = dateObj.getFullYear();
-    return `${day}/${month}/${year}`;
+  const [rating, setRating] = useState(0);
+  const [review, setReview] = useState("");
+  const { ratingRelawan, loading } = useRatingRelawan();
+  // const formatDate = (date: string) => {
+  //   if (!date) return "-";
+  //   const dateObj = new Date(date);
+  //   const day = dateObj.getDate().toString().padStart(2, "0");
+  //   const month = (dateObj.getMonth() + 1).toString().padStart(2, "0");
+  //   const year = dateObj.getFullYear();
+  //   return `${day}/${month}/${year}`;
+  // };
+
+  const handleKirimReview = async () => {
+    try {
+      await ratingRelawan(selectedSubs?.subs_kegiatan_id, rating, review);
+      Alert.alert("Success", "Review berhasil dikirim");
+      setModalVisible(false);
+      setSelectedSubs(null);
+      setRating(0);
+      setReview("");
+      if (refetch) {
+        refetch();
+      }
+    } catch (error) {
+      console.log(error);
+      Alert.alert("Error", "Terjadi kesalahan saat mengirim review");
+    }
   };
+
   return (
     <Modal
       animationType="slide"
@@ -41,7 +74,7 @@ export default function ModalApply({
       <View style={tw`flex-1 justify-end rounded-t-3xl bg-black/50`}>
         <View style={tw`bg-white rounded-t-3xl p-6 w-[100%] max-w-[400px]`}>
           <View style={tw`flex-row items-center justify-between`}>
-            <Text style={tw`text-xl font-bold mb-4 mt-2 text-center`}>
+            <Text style={tw`text-xl font-bold mb-2 mt-1 text-center`}>
               {selectedSubs?.is_verified === "N"
                 ? "Verifikasi Relawan"
                 : "Detail Relawan"}
@@ -52,7 +85,7 @@ export default function ModalApply({
           </View>
           <View style={tw`h-0.5 bg-gray-200 mt-1 mb-2`} />
           {selectedSubs && (
-            <View style={tw`mb-20`}>
+            <View style={tw`mb-5`}>
               <Text style={tw`text-gray-700 mb-2 font-bold text-base`}>
                 Nama: {selectedSubs.user?.nama}
               </Text>
@@ -63,9 +96,9 @@ export default function ModalApply({
                 Tanggal Lahir:{" "}
                 {formatDate(selectedSubs.user?.tanggal_lahir || "")}
               </Text> */}
-              <Text style={tw`text-gray-700 mb-2`}>
+              {/* <Text style={tw`text-gray-700 mb-2`}>
                 Alamat: {selectedSubs.user?.alamat || ""}
-              </Text>
+              </Text> */}
               <Text style={tw`text-gray-700 mb-2`}>
                 Email: {selectedSubs.user?.email || ""}
               </Text>
@@ -87,10 +120,14 @@ export default function ModalApply({
                   </View>
                 </>
               )}
-              {(selectedSubs?.rating !== null || selectedSubs?.review !== null) && (
+              {(selectedSubs?.rating !== null ||
+                selectedSubs?.review !== null) && (
                 <>
-                  <View style={tw`flex-row items-center justify-start mt-4`}>
-                    <Text style={tw`text-gray-600 font-sm mt-3`}>Rating: </Text>
+                  <View style={tw`h-0.4 bg-gray-200 mt-1 mb-2`} />
+                  <View style={tw`flex-row items-center justify-start mt-1`}>
+                    <Text style={tw`text-gray-600 font-sm mt-3`}>
+                      Rating dari Relawan:{" "}
+                    </Text>
                     <View style={tw`flex-row items-center`}>
                       {[...Array(selectedSubs?.rating)].map((_, index) => (
                         <Ionicons
@@ -113,6 +150,71 @@ export default function ModalApply({
               )}
             </View>
           )}
+          {(selectedSubs?.rating_for_user === null ||
+            (selectedSubs?.review_for_user === null &&
+              selectedSubs?.is_verified === "Y")) && (
+            <>
+              <View style={tw`h-0.4 bg-gray-200 mt-1 mb-2`} />
+              <Text style={tw`text-sm mb-3`}>
+                Bagaimana Pengalaman Anda dengan Relawan Ini?
+              </Text>
+              <View style={tw`flex-row mb-3`}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <TouchableOpacity key={star} onPress={() => setRating(star)}>
+                    <Ionicons
+                      name={star <= rating ? "star" : "star-outline"}
+                      size={30}
+                      style={tw`mr-2`}
+                      color={star <= rating ? "#FFD700" : "#ccc"}
+                    />
+                  </TouchableOpacity>
+                ))}
+              </View>
+              <Text style={tw`text-sm mb-3`}>Berikan Review Relawan</Text>
+              <TextInput
+                style={tw`border border-gray-300 rounded-lg p-2 mb-4 h-20`}
+                multiline
+                value={review}
+                onChangeText={setReview}
+                placeholder="Berikan Review Jujur Anda disini ..."
+              />
+              <Pressable
+                style={tw`bg-blue-500 px-2 py-2 rounded-xl w-50 items-center justify-center`}
+                onPress={handleKirimReview}>
+                <Text style={tw`text-white font-bold text-sm text-center`}>
+                  Submit Review
+                </Text>
+              </Pressable>
+            </>
+          )}
+          {(selectedSubs?.rating_for_user !== null || selectedSubs?.review_for_user !== null) && (
+            <>
+              <View style={tw`h-0.4 bg-gray-200 mt-1 mb-2`} />
+              <View style={tw`flex-row items-center justify-start mt-1`}>
+                <Text style={tw`text-gray-600 font-sm mt-3`}>
+                  Rating Anda ke Relawan:{" "}
+                </Text>
+                <View style={tw`flex-row items-center`}>
+                  {[...Array(selectedSubs?.rating_for_user)].map((_, index) => (
+                    <Ionicons
+                      key={index}
+                      name="star"
+                      size={16}
+                      color="#FFD700"
+                      style={tw`ml-1 mt-3`}
+                    />
+                  ))}
+                </View>
+              </View>
+              <View style={tw`flex-row items-center justify-start mt-1`}>
+                <Text style={tw`text-gray-600 font-sm mt-3`}>Review: </Text>
+                <Text style={tw`text-blue-800 font-sm mt-3 italic`}>
+                  {selectedSubs?.review_for_user || "Tidak ada review"}
+                </Text>
+              </View>
+            </>
+          )}
+
           <View style={tw`h-0.4 bg-gray-200 mt-3 mb-3`} />
 
           {selectedSubs?.is_verified === "N" && (

@@ -20,16 +20,121 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [selectedJenisKelamin, setSelectedJenisKelamin] = useState("");
   const [alamat, setAlamat] = useState("");
+  
+  // Validation state
+  const [namaError, setNamaError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [provinsiError, setProvinsiError] = useState("");
+  const [kabupatenError, setKabupatenError] = useState("");
+  const [jenisKelaminError, setJenisKelaminError] = useState("");
+  const [alamatError, setAlamatError] = useState("");
+
   // Hooks
   const { provinsi, loading: loadingProvinsi, error: errorProvinsi } = useHooksProvinsi();
   const { kabupaten, loading: loadingKabupaten, error: errorKabupaten } = useHooksKabupaten(selectedProvinsi);
   const { registerRelawan, loading: loadingRegister, error: errorRegister } = useRegisRelawan();
+  
+  // Validation functions
+  const validateNama = (text: string) => {
+    if (!text) {
+      setNamaError("Nama lengkap wajib diisi");
+    } else if (text.length < 5) {
+      setNamaError("Nama lengkap minimal 5 karakter");
+    } else {
+      setNamaError("");
+    }
+  };
+
+  const validateEmail = (text: string) => {
+    if (!text) {
+      setEmailError("Email wajib diisi");
+    } else if (!text.includes("@")) {
+      setEmailError("Email harus mengandung @");
+    } else {
+      setEmailError("");
+    }
+  };
+
+  const validatePassword = (text: string) => {
+    if (!text) {
+      setPasswordError("Password wajib diisi");
+    } else if (!/(?=.*[A-Z])/.test(text)) {
+      setPasswordError("Password harus mengandung minimal 1 huruf kapital");
+    } else if (!/(?=.*[0-9])/.test(text)) {
+      setPasswordError("Password harus mengandung minimal 1 angka");
+    } else {
+      setPasswordError("");
+    }
+  };
+
+  const validatePhone = (text: string) => {
+    if (!text) {
+      setPhoneError("Nomor telepon wajib diisi");
+    } else if (!/^\d+$/.test(text)) {
+      setPhoneError("Nomor telepon harus berupa angka");
+    } else {
+      setPhoneError("");
+    }
+  };
+
+  const validateProvinsi = (value: number) => {
+    if (!value) {
+      setProvinsiError("Provinsi wajib dipilih");
+    } else {
+      setProvinsiError("");
+    }
+  };
+
+  const validateKabupaten = (value: number) => {
+    if (!value) {
+      setKabupatenError("Kabupaten wajib dipilih");
+    } else {
+      setKabupatenError("");
+    }
+  };
+
+  const validateJenisKelamin = (value: string) => {
+    if (!value) {
+      setJenisKelaminError("Jenis kelamin wajib dipilih");
+    } else {
+      setJenisKelaminError("");
+    }
+  };
+
+  const validateAlamat = (text: string) => {
+    if (!text) {
+      setAlamatError("Alamat wajib diisi");
+    } else {
+      setAlamatError("");
+    }
+  };
+
   // Function
   const handleSubmit = async () => {
-    if (!namaLengkap || !email || !password || !selectedProvinsi || !selectedKabupaten || !selectedJenisKelamin) {
+    // Validate all fields before submission
+    validateNama(namaLengkap);
+    validateEmail(email);
+    validatePassword(password);
+    validatePhone(phone);
+    validateProvinsi(selectedProvinsi);
+    validateKabupaten(selectedKabupaten);
+    validateJenisKelamin(selectedJenisKelamin);
+    validateAlamat(alamat);
+
+    // Check if there are any errors
+    if (namaError || emailError || passwordError || phoneError || 
+        provinsiError || kabupatenError || jenisKelaminError || alamatError) {
+      Alert.alert('Error', 'Mohon perbaiki kesalahan pada form');
+      return;
+    }
+
+    if (!namaLengkap || !email || !password || !selectedProvinsi || !selectedKabupaten || !selectedJenisKelamin || !alamat) {
       Alert.alert('Error', 'Mohon lengkapi semua data');
       return;
     }
+    
     await registerRelawan({
       nama: namaLengkap,
       email, password,
@@ -42,6 +147,7 @@ const Signup = () => {
       Alert.alert('Error', errorRegister);
     }
   };
+
   return (
     <View style={tw`p-6 pb-0 mb-0 justify-end mt-8`}>
       <View style={tw`mt-8`}>
@@ -73,9 +179,15 @@ const Signup = () => {
               placeholder="Nama Lengkap"
               keyboardType="default"
               autoCapitalize="none"
-              onChangeText={(text) => setNamaLengkap(text)}
+              onChangeText={(text) => {
+                setNamaLengkap(text);
+                validateNama(text);
+              }}
               value={namaLengkap}
             />
+            {namaError ? (
+              <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>{namaError}</Text>
+            ) : null}
           </View>
           <View style={tw`mb-3`}>
             <TextInput
@@ -83,9 +195,15 @@ const Signup = () => {
               placeholder="Email"
               keyboardType="email-address"
               autoCapitalize="none"
-              onChangeText={(text) => setEmail(text)}
+              onChangeText={(text) => {
+                setEmail(text);
+                validateEmail(text);
+              }}
               value={email}
             />
+            {emailError ? (
+              <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>{emailError}</Text>
+            ) : null}
           </View>
           <View
             style={tw`border border-gray-200 rounded-full px-4 py-4 mb-3 bg-white flex-row items-center`}>
@@ -93,7 +211,10 @@ const Signup = () => {
               style={tw`flex-1 text-black`}
               placeholder="Password"
               secureTextEntry={!showPassword}
-              onChangeText={(text) => setPassword(text)}
+              onChangeText={(text) => {
+                setPassword(text);
+                validatePassword(text);
+              }}
               value={password}
             />
             <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
@@ -105,15 +226,28 @@ const Signup = () => {
               />
             </TouchableOpacity>
           </View>
+          {passwordError ? (
+            <Text style={tw`text-red-500 text-xs ml-4 mt-1 mb-3`}>{passwordError}</Text>
+          ) : null}
           <View style={tw`mb-3`}>
             <TextInput
               style={tw`border border-gray-200 rounded-full px-4 py-4 bg-white text-black`}
               placeholder="Phone Number"
               keyboardType="phone-pad"
+              maxLength={16}
               autoCapitalize="none"
-              onChangeText={(text) => setPhone(text)}
+              onChangeText={(text) => {
+                const numericText = text.replace(/[^0-9]/g, '');
+                if (numericText !== phone) {
+                  setPhone(numericText);
+                  validatePhone(numericText);
+                }
+              }}
               value={phone}
             />
+            {phoneError ? (
+              <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>{phoneError}</Text>
+            ) : null}
           </View>
           <DropdownComponent
             data={[
@@ -126,10 +260,14 @@ const Signup = () => {
             value={selectedProvinsi}
             onChange={(value) => {
               setSelectedProvinsi(parseInt(value));
+              validateProvinsi(parseInt(value));
             }}
             hasError={false}
             loading={loadingProvinsi}
           />
+          {provinsiError ? (
+            <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>{provinsiError}</Text>
+          ) : null}
           {errorProvinsi && (
             <Text style={tw`text-red-500 text-sm`}>{errorProvinsi}</Text>
           )}
@@ -144,10 +282,14 @@ const Signup = () => {
             value={selectedKabupaten}
             onChange={(value) => {
               setSelectedKabupaten(parseInt(value));
+              validateKabupaten(parseInt(value));
             }}
             hasError={false}
             loading={loadingKabupaten}
           />
+          {kabupatenError ? (
+            <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>{kabupatenError}</Text>
+          ) : null}
           {errorKabupaten && (
             <Text style={tw`text-red-500 text-sm`}>{errorKabupaten}</Text>
           )}
@@ -162,10 +304,14 @@ const Signup = () => {
             value={selectedJenisKelamin}
             onChange={(value) => {
               setSelectedJenisKelamin(value);
+              validateJenisKelamin(value);
             }}
             hasError={false}
             loading={loadingProvinsi}
           />
+          {jenisKelaminError ? (
+            <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>{jenisKelaminError}</Text>
+          ) : null}
         </View>
         <View style={tw`mb-3`}>
             <TextInput
@@ -173,9 +319,15 @@ const Signup = () => {
               placeholder="Alamat"
               keyboardType="default"
               autoCapitalize="none"
-              onChangeText={(text) => setAlamat(text)}
+              onChangeText={(text) => {
+                setAlamat(text);
+                validateAlamat(text);
+              }}
               value={alamat}
             />
+            {alamatError ? (
+              <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>{alamatError}</Text>
+            ) : null}
           </View>
       </View>
       <View style={tw`justify-center items-center mt-5`}>

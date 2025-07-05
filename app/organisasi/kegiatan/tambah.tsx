@@ -8,6 +8,7 @@ import { useSubmitKegiatan } from "@/src/hooks/Organisasi/useSubmitKegiatan";
 import { useUpdateKegiatan } from "@/src/hooks/Organisasi/useUpdateKegiatan";
 import { JenisKegiatanType, TopicType } from "@/src/types/types";
 import { Ionicons } from "@expo/vector-icons";
+import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -32,6 +33,7 @@ export default function AddKegiatanScreen() {
   const editData = params.data ? JSON.parse(params.data as string) : null;
   const { authState, logout } = useAuthContext();
   const scrollViewRef = useRef<ScrollView>(null);
+  
   // topic
   const [topicList, setTopicList] = useState<TopicType[]>([]);
   const { topic, loading: loadingTopic, error: errorTopic } = useFetchTopic();
@@ -70,9 +72,114 @@ export default function AddKegiatanScreen() {
   const [base64Image, setBase64Image] = useState<string>("");
   const [perluPertanyaan, setPerluPertanyaan] = useState<boolean>(false);
   const [deadlineError, setDeadlineError] = useState<string>("");
+  const [dokumenPendukung, setDokumenPendukung] = useState<string>("");
+  const [dokumenPendukungError, setDokumenPendukungError] = useState<string>("");
+  
+  // Validation state
+  const [namaKegiatanError, setNamaKegiatanError] = useState("");
+  const [selectedTopicError, setSelectedTopicError] = useState("");
+  const [selectedJenisKegiatanError, setSelectedJenisKegiatanError] = useState("");
+  const [locationError, setLocationError] = useState("");
+  const [jumlahRelawanError, setJumlahRelawanError] = useState("");
+  const [totalJamKerjaError, setTotalJamKerjaError] = useState("");
+  const [kriteriaRelawanError, setKriteriaRelawanError] = useState("");
+  const [tugasRelawanError, setTugasRelawanError] = useState("");
+  const [deskripsiKegiatanError, setDeskripsiKegiatanError] = useState("");
+  
   const { submitKegiatan, loading: submitting } = useSubmitKegiatan();
   const { updateKegiatan, loading: updating } = useUpdateKegiatan();
   const { refetch: refetchKegiatan } = useFetchKegiatanSelf();
+
+  // Validation functions
+  const validateNamaKegiatan = (text: string) => {
+    if (!text) {
+      setNamaKegiatanError("Nama kegiatan wajib diisi");
+    } else if (text.length < 5) {
+      setNamaKegiatanError("Nama kegiatan minimal 5 karakter");
+    } else {
+      setNamaKegiatanError("");
+    }
+  };
+
+  const validateSelectedTopic = (value: number | null) => {
+    if (!value) {
+      setSelectedTopicError("Topik wajib dipilih");
+    } else {
+      setSelectedTopicError("");
+    }
+  };
+
+  const validateSelectedJenisKegiatan = (value: number | null) => {
+    if (!value) {
+      setSelectedJenisKegiatanError("Jenis kegiatan wajib dipilih");
+    } else {
+      setSelectedJenisKegiatanError("");
+    }
+  };
+
+  const validateLocation = (text: string) => {
+    if (!text) {
+      setLocationError("Lokasi kegiatan wajib diisi");
+    } else if (text.length < 5) {
+      setLocationError("Lokasi kegiatan minimal 5 karakter");
+    } else {
+      setLocationError("");
+    }
+  };
+
+  const validateJumlahRelawan = (text: string) => {
+    if (!text) {
+      setJumlahRelawanError("Jumlah relawan wajib diisi");
+    } else if (!/^\d+$/.test(text)) {
+      setJumlahRelawanError("Jumlah relawan harus berupa angka");
+    } else {
+      setJumlahRelawanError("");
+    }
+  };
+
+  const validateTotalJamKerja = (text: string) => {
+    if (!text) {
+      setTotalJamKerjaError("Total jam kerja wajib diisi");
+    } else if (!/^\d+$/.test(text)) {
+      setTotalJamKerjaError("Total jam kerja harus berupa angka");
+    } else {
+      setTotalJamKerjaError("");
+    }
+  };
+
+  const validateKriteriaRelawan = (text: string) => {
+    if (!text) {
+      setKriteriaRelawanError("Kriteria relawan wajib diisi");
+    } else if (text.length < 5) {
+      setKriteriaRelawanError("Kriteria relawan minimal 5 karakter");
+    } else {
+      setKriteriaRelawanError("");
+    }
+  };
+
+  const validateTugasRelawan = (text: string) => {
+    if (!text) {
+      setTugasRelawanError("Tugas relawan wajib diisi");
+    } else {
+      setTugasRelawanError("");
+    }
+  };
+
+  const validateDeskripsiKegiatan = (text: string) => {
+    if (!text) {
+      setDeskripsiKegiatanError("Deskripsi kegiatan wajib diisi");
+    } else {
+      setDeskripsiKegiatanError("");
+    }
+  };
+
+  const validateDokumenPendukung = (text: string) => {
+    if (!text) {
+      setDokumenPendukungError("Dokumen pendukung wajib diisi");
+    } else {
+      setDokumenPendukungError("");
+    }
+  };
 
   useEffect(() => {
     if (topic) {
@@ -101,6 +208,7 @@ export default function AddKegiatanScreen() {
       setBase64Image(editData.photo || "");
       setPerluPertanyaan(editData.perlu_pertanyaan || false);
       setDeadline(editData.deadline || "");
+      setDokumenPendukung(editData.dokumen_pendukung || "");
     }
   }, []); // Empty dependency array to run only once
 
@@ -114,6 +222,12 @@ export default function AddKegiatanScreen() {
     } else {
       setStartDateError("");
       setStartDate(date.toISOString());
+      
+      // If end date exists and is before start date, clear it
+      if (endDate && new Date(endDate) <= date) {
+        setEndDate("");
+        setEndDateError("Tanggal berakhir harus setelah tanggal mulai");
+      }
     }
     setShowStartDatePicker(false);
   };
@@ -124,6 +238,9 @@ export default function AddKegiatanScreen() {
 
     if (date < today) {
       setEndDateError("Tanggal tidak boleh di masa lalu");
+      setEndDate("");
+    } else if (startDate && date <= new Date(startDate)) {
+      setEndDateError("Tanggal berakhir harus setelah tanggal mulai");
       setEndDate("");
     } else {
       setEndDateError("");
@@ -188,14 +305,70 @@ export default function AddKegiatanScreen() {
     }
   };
 
+  const pickFile = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: [
+          'application/pdf',
+          'application/msword',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'image/*'
+        ],
+        copyToCacheDirectory: true
+      });
+
+      if (!result.canceled) {
+        const selectedFile = result.assets[0];
+        
+        // Convert to base64
+        const base64 = await FileSystem.readAsStringAsync(selectedFile.uri, {
+          encoding: FileSystem.EncodingType.Base64
+        });
+        setDokumenPendukung(base64);
+        validateDokumenPendukung(base64);
+      }
+    } catch (error) {
+      console.error("Error picking file:", error);
+      Alert.alert("Error", "Failed to pick file. Please try again.");
+    }
+  };
+
   const handleSubmit = async () => {
+    // Validate all fields before submission
+    validateNamaKegiatan(namaKegiatan);
+    validateSelectedTopic(selectedTopic);
+    validateSelectedJenisKegiatan(selectedJenisKegiatan);
+    validateLocation(location);
+    validateJumlahRelawan(jumlahRelawan);
+    validateTotalJamKerja(totalJamKerja);
+    validateKriteriaRelawan(kriteriaRelawan);
+    validateTugasRelawan(tugasRelawan);
+    validateDeskripsiKegiatan(deskripsiKegiatan);
+    validateDokumenPendukung(dokumenPendukung);
+
+    // Check if there are any errors
+    if (namaKegiatanError || selectedTopicError || selectedJenisKegiatanError || 
+        locationError || jumlahRelawanError || totalJamKerjaError || 
+        kriteriaRelawanError || tugasRelawanError || deskripsiKegiatanError ||
+        startDateError || endDateError || deadlineError || dokumenPendukungError) {
+      Alert.alert('Error', 'Mohon perbaiki kesalahan pada form');
+      return;
+    }
+
     if (
       !namaKegiatan ||
       !selectedTopic ||
       !selectedJenisKegiatan ||
       !startDate ||
       !endDate ||
-      !location
+      !location ||
+      !jumlahRelawan ||
+      !totalJamKerja ||
+      !kriteriaRelawan ||
+      !tugasRelawan ||
+      !deskripsiKegiatan ||
+      !deadline ||
+      !dokumenPendukung
     ) {
       Alert.alert("Error", "Semua field wajib diisi");
       return;
@@ -214,6 +387,7 @@ export default function AddKegiatanScreen() {
       kriteria_relawan: kriteriaRelawan,
       deskripsi_kegiatan: deskripsiKegiatan,
       photo: base64Image,
+      dokumen_pendukung: dokumenPendukung,
       perlu_pertanyaan: perluPertanyaan,
       deadline: deadline
     };
@@ -288,8 +462,14 @@ export default function AddKegiatanScreen() {
               placeholderTextColor="gray"
               autoCapitalize="none"
               value={namaKegiatan}
-              onChangeText={setNamaKegiatan}
+              onChangeText={(text) => {
+                setNamaKegiatan(text);
+                validateNamaKegiatan(text);
+              }}
             />
+            {namaKegiatanError ? (
+              <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>{namaKegiatanError}</Text>
+            ) : null}
           </View>
           <View style={tw`w-full`}>
             <DropdownComponent
@@ -300,11 +480,16 @@ export default function AddKegiatanScreen() {
               placeholder="Pilih Topik (*)"
               value={selectedTopic?.toString() || ""}
               onChange={(value) => {
-                setSelectedTopic(value ? parseInt(value) : null);
+                const topicValue = value ? parseInt(value) : null;
+                setSelectedTopic(topicValue);
+                validateSelectedTopic(topicValue);
               }}
               hasError={errorTopic ? true : false}
               loading={loadingTopic}
             />
+            {selectedTopicError ? (
+              <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>{selectedTopicError}</Text>
+            ) : null}
             {errorTopic && (
               <Text style={tw`text-red-500 text-sm`}>{errorTopic}</Text>
             )}
@@ -318,11 +503,16 @@ export default function AddKegiatanScreen() {
               placeholder="Pilih Jenis Kegiatan (*)"
               value={selectedJenisKegiatan?.toString() || ""}
               onChange={(value) => {
-                setSelectedJenisKegiatan(value ? parseInt(value) : null);
+                const jenisValue = value ? parseInt(value) : null;
+                setSelectedJenisKegiatan(jenisValue);
+                validateSelectedJenisKegiatan(jenisValue);
               }}
               hasError={errorJenisKegiatan ? true : false}
               loading={loadingJenisKegiatan}
             />
+            {selectedJenisKegiatanError ? (
+              <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>{selectedJenisKegiatanError}</Text>
+            ) : null}
             {errorJenisKegiatan && (
               <Text style={tw`text-red-500 text-sm`}>{errorJenisKegiatan}</Text>
             )}
@@ -339,7 +529,7 @@ export default function AddKegiatanScreen() {
                 </Text>
               </Pressable>
               {startDateError ? (
-                <Text style={tw`text-red-500 text-sm mt-1`}>
+                <Text style={tw`text-red-500 text-xs mt-1`}>
                   {startDateError}
                 </Text>
               ) : null}
@@ -361,7 +551,7 @@ export default function AddKegiatanScreen() {
                 </Text>
               </Pressable>
               {endDateError ? (
-                <Text style={tw`text-red-500 text-sm mt-1`}>
+                <Text style={tw`text-red-500 text-xs mt-1`}>
                   {endDateError}
                 </Text>
               ) : null}
@@ -384,7 +574,7 @@ export default function AddKegiatanScreen() {
                 </Text>
               </Pressable>
               {deadlineError ? (
-                <Text style={tw`text-red-500 text-sm mt-1`}>
+                <Text style={tw`text-red-500 text-xs mt-1`}>
                   {deadlineError}
                 </Text>
               ) : null}
@@ -402,64 +592,106 @@ export default function AddKegiatanScreen() {
               placeholderTextColor="gray"
               autoCapitalize="none"
               value={location}
-              onChangeText={setLocation}
+              onChangeText={(text) => {
+                setLocation(text);
+                validateLocation(text);
+              }}
             />
+            {locationError ? (
+              <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>{locationError}</Text>
+            ) : null}
           </View>
           <View style={tw`w-full mb-3 flex-row items-center justify-between`}>
-            <TextInput
-              style={tw`text-black bg-white py-4 px-4 rounded-full w-[48%] border border-gray-200`}
-              placeholder="Relawan Dibutuhkan"
-              placeholderTextColor="gray"
-              autoCapitalize="none"
-              keyboardType="numeric"
-              value={jumlahRelawan}
-              onChangeText={setJumlahRelawan}
-            />
-            <TextInput
-              style={tw`text-black bg-white py-4 px-4 rounded-full w-[48%] border border-gray-200`}
-              placeholder="Total Jam Kerja"
-              placeholderTextColor="gray"
-              autoCapitalize="none"
-              keyboardType="numeric"
-              value={totalJamKerja}
-              onChangeText={setTotalJamKerja}
-            />
+            <View style={tw`w-[48%]`}>
+              <TextInput
+                style={tw`text-black bg-white py-4 px-4 rounded-full w-full border border-gray-200`}
+                placeholder="Relawan Dibutuhkan (*)"
+                placeholderTextColor="gray"
+                autoCapitalize="none"
+                keyboardType="numeric"
+                value={jumlahRelawan}
+                onChangeText={(text) => {
+                  const numericText = text.replace(/[^0-9]/g, '');
+                  setJumlahRelawan(numericText);
+                  validateJumlahRelawan(numericText);
+                }}
+              />
+              {jumlahRelawanError ? (
+                <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>{jumlahRelawanError}</Text>
+              ) : null}
+            </View>
+            <View style={tw`w-[48%]`}>
+              <TextInput
+                style={tw`text-black bg-white py-4 px-4 rounded-full w-full border border-gray-200`}
+                placeholder="Total Jam Kerja (*)"
+                placeholderTextColor="gray"
+                autoCapitalize="none"
+                keyboardType="numeric"
+                value={totalJamKerja}
+                onChangeText={(text) => {
+                  const numericText = text.replace(/[^0-9]/g, '');
+                  setTotalJamKerja(numericText);
+                  validateTotalJamKerja(numericText);
+                }}
+              />
+              {totalJamKerjaError ? (
+                <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>{totalJamKerjaError}</Text>
+              ) : null}
+            </View>
           </View>
           <View style={tw`w-full mb-3`}>
             <TextInput
               style={tw`text-black bg-white py-4 px-4 rounded-full w-full border border-gray-200`}
-              placeholder="Kriteria Relawan"
+              placeholder="Kriteria Relawan (*)"
               placeholderTextColor="gray"
               autoCapitalize="none"
               value={kriteriaRelawan}
-              onChangeText={setKriteriaRelawan}
+              onChangeText={(text) => {
+                setKriteriaRelawan(text);
+                validateKriteriaRelawan(text);
+              }}
             />
+            {kriteriaRelawanError ? (
+              <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>{kriteriaRelawanError}</Text>
+            ) : null}
           </View>
           <View style={tw`w-full mb-3`}>
             <TextInput
               style={tw`text-black bg-white py-4 px-4 rounded-lg w-full border border-gray-200 min-h-[80px]`}
-              placeholder="Tugas Relawan"
+              placeholder="Tugas Relawan (*)"
               placeholderTextColor="gray"
               autoCapitalize="none"
               value={tugasRelawan}
-              onChangeText={setTugasRelawan}
+              onChangeText={(text) => {
+                setTugasRelawan(text);
+                validateTugasRelawan(text);
+              }}
               multiline={true}
               numberOfLines={2}
               textAlignVertical="top"
             />
+            {tugasRelawanError ? (
+              <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>{tugasRelawanError}</Text>
+            ) : null}
           </View>
           <View style={tw`w-full mb-3`}>
             <TextInput
               style={tw`text-black bg-white py-4 px-4 rounded-lg w-full border border-gray-200 min-h-[100px]`}
-              placeholder="Deskripsi Kegiatan"
+              placeholder="Deskripsi Kegiatan (*)"
               placeholderTextColor="gray"
               autoCapitalize="none"
               value={deskripsiKegiatan}
-              onChangeText={setDeskripsiKegiatan}
+              onChangeText={(text) => {
+                setDeskripsiKegiatan(text);
+                validateDeskripsiKegiatan(text);
+              }}
               multiline={true}
               numberOfLines={3}
               textAlignVertical="top"
             />
+            {deskripsiKegiatanError ? (
+              <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>{deskripsiKegiatanError}</Text>
+            ) : null}
           </View>
           <View style={tw`w-full mb-3`}>
             <TouchableOpacity
@@ -484,6 +716,33 @@ export default function AddKegiatanScreen() {
                 />
               </View>
             )}
+          </View>
+          <View style={tw`w-full mb-3`}>
+            <TouchableOpacity
+              style={tw`text-black bg-white py-4 px-4 rounded-full w-full border border-gray-200 flex-row items-center justify-center`}
+              onPress={pickFile}>
+              <Ionicons
+                name="document-outline"
+                size={24}
+                color="gray"
+                style={tw`mr-2`}
+              />
+              <Text style={tw`text-gray-500`}>
+                {dokumenPendukung ? "Change Dokumen Pendukung" : "Select Dokumen Pendukung (*)"}
+              </Text>
+            </TouchableOpacity>
+            {dokumenPendukung && (
+              <View style={tw`mt-2 p-3 bg-gray-100 rounded-lg`}>
+                <Text style={tw`text-gray-700 text-sm`}>
+                  File selected successfully
+                </Text>
+              </View>
+            )}
+            {dokumenPendukungError ? (
+              <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>
+                {dokumenPendukungError}
+              </Text>
+            ) : null}
           </View>
           {/* Radio Button */}
           <View style={tw`w-full mb-3 mt-3`}>

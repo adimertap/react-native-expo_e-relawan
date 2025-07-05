@@ -1,3 +1,4 @@
+import { API_URL } from "@/src/constants/env";
 import { useAuthContext } from "@/src/contexts/AuthContext";
 import { useDeleteKegiatan } from "@/src/hooks/Organisasi/useDeleteKegiatan";
 import { useFetchKegiatanSelf } from "@/src/hooks/Organisasi/useFetchKegiatanSelf";
@@ -8,6 +9,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   Alert,
+  Image,
   RefreshControl,
   ScrollView,
   Text,
@@ -106,6 +108,22 @@ export default function DetailKegiatanRelawanScreen() {
     }
   };
 
+  // Calculate average rating
+  const calculateAverageRating = () => {
+    if (!detailKegiatan?.subs_kegiatan || detailKegiatan.subs_kegiatan.length === 0) {
+      return 0;
+    }
+    const ratings = detailKegiatan.subs_kegiatan
+      .map(subs => subs.rating)
+      .filter(rating => rating !== null && rating !== undefined);
+    if (ratings.length === 0) {
+      return 0;
+    }
+    const sum = ratings.reduce((acc, rating) => acc + rating, 0);
+    return Number((sum / ratings.length).toFixed(1));
+  };
+  const averageRating = calculateAverageRating();
+
   return (
     <View style={tw`flex-1 bg-gray-50`}>
       <View style={tw`bg-blue-600 rounded-b-3xl mb-3 py-1`}>
@@ -128,7 +146,7 @@ export default function DetailKegiatanRelawanScreen() {
           </TouchableOpacity> */}
         </View>
       </View>
-      <View style={tw`p-6 pt-2 mt-1`}>
+      <View style={tw`flex-1 p-6 pt-2 mt-1`}>
         <View style={tw`flex-row items-center justify-between`}>
           <Text
             style={tw`text-white text-xs px-2 py-1 rounded-2xl ${
@@ -145,25 +163,54 @@ export default function DetailKegiatanRelawanScreen() {
               : ""}
           </Text>
         </View>
+        
+        {/* Image Display */}
+        {image && (
+          <View style={tw`mt-4 mb-4`}>
+            <Image
+              source={{ uri: `${API_URL}/${image}` }}
+              style={tw`w-full h-48 rounded-lg`}
+              resizeMode="cover"
+            />
+          </View>
+        )}
+        
         <View style={tw`mt-3`}>
           <Text style={tw`text-black text-lg font-medium`}>{namaKegiatan}</Text>
           <Text style={tw`text-gray-500 text-sm mt-1`}>
             {`Topic: ${topic}, Event: ${jenisKegiatan}`}
           </Text>
+          <View style={tw`flex-row items-center mt-3`}>
+            <Text style={tw`text-blue-500 text-sm mr-2`}>
+              Average Rating: {averageRating.toFixed(1)}
+            </Text>
+            {averageRating > 0 && (
+              <View style={tw`flex-row items-center`}>
+                {[...Array(5)].map((_, index) => (
+                  <Ionicons
+                    key={index}
+                    name={index < Math.floor(averageRating) ? "star" : "star-outline"}
+                    size={16}
+                    color={index < Math.floor(averageRating) ? "#FFD700" : "#D3D3D3"}
+                    style={tw`ml-0.5`}
+                  />
+                ))}
+              </View>
+            )}
+          </View>
         </View>
         <View style={tw`h-0.5 bg-gray-200 mt-5 mb-2`} />
         <ScrollView
-          style={tw`mb-20`}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={tw`pb-20`}
-          refreshControl={
-            <RefreshControl
-              refreshing={loadingDetailKegiatan}
-              onRefresh={() => {}}
-              colors={["#2563eb"]}
-              tintColor="#2563eb"
-            />
-          }>
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={tw`p-1 pt-2 mt-2 pb-32`}
+        refreshControl={
+          <RefreshControl
+            refreshing={loadingDetailKegiatan}
+            onRefresh={() => {}}
+            colors={["#2563eb"]}
+            tintColor="#2563eb"
+          />
+        }>
           <View style={tw`mt-3 flex-row justify-between items-center`}>
             <Text style={tw`text-gray-700 font-sm`}>
               {`${formatDate(startDate)} - ${formatDate(endDate)}`}
@@ -249,8 +296,7 @@ export default function DetailKegiatanRelawanScreen() {
               <>
                 <Text
                   style={tw`text-blue-500 p-5 text-sm text-center italic mt-10`}>
-                  {`Anda Sudah Mendaftar! Mohon tunggu konfirmasi dari pihak
-                  organisasi.`}
+                  {`Anda Sudah Mendaftar! Mohon tunggu konfirmasi dari pihak organisasi.`}
                 </Text>
               </>
             )}

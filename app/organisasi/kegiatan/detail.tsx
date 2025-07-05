@@ -1,3 +1,4 @@
+import { API_URL } from "@/src/constants/env";
 import { useAuthContext } from "@/src/contexts/AuthContext";
 import { useDeleteKegiatan } from "@/src/hooks/Organisasi/useDeleteKegiatan";
 import { useFetchDetailKegiatan } from "@/src/hooks/Organisasi/useFetchDetailKegiatan";
@@ -12,6 +13,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   Alert,
+  Image,
   RefreshControl,
   ScrollView,
   Text,
@@ -68,6 +70,30 @@ export default function DetailKegiatanScreen() {
   const [selectedSubs, setSelectedSubs] = useState<any>(null);
   const { updateKegiatanBerjalan } = useUpdateKegiatanBerjalan();
   const { updateKegiatanSelesai } = useUpdateKegiatanSelesai();
+
+  // Calculate average rating
+  const calculateAverageRating = () => {
+    if (
+      !detailKegiatan?.subs_kegiatan ||
+      detailKegiatan.subs_kegiatan.length === 0
+    ) {
+      return 0;
+    }
+
+    const ratings = detailKegiatan.subs_kegiatan
+      .map((subs) => subs.rating)
+      .filter((rating) => rating !== null && rating !== undefined);
+
+    if (ratings.length === 0) {
+      return 0;
+    }
+
+    const sum = ratings.reduce((acc, rating) => acc + rating, 0);
+    return Number((sum / ratings.length).toFixed(1));
+  };
+
+  const averageRating = calculateAverageRating();
+
   useEffect(() => {
     if (detailKegiatan) {
       setNamaKegiatan(detailKegiatan.nama_kegiatan || "");
@@ -210,7 +236,18 @@ export default function DetailKegiatanScreen() {
           </TouchableOpacity>
         </View>
       </View>
-      <View style={tw`p-5 pt-2 mt-2`}>
+      <ScrollView
+        style={tw`flex-1`}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={tw`p-5 pt-2 mt-2 pb-32`}
+        refreshControl={
+          <RefreshControl
+            refreshing={loadingDetailKegiatan}
+            onRefresh={() => {}}
+            colors={["#2563eb"]}
+            tintColor="#2563eb"
+          />
+        }>
         <View style={tw`flex-row items-center justify-between`}>
           <Text
             style={tw`text-white text-xs px-2 py-1 rounded-2xl ${
@@ -270,7 +307,7 @@ export default function DetailKegiatanScreen() {
                 </TouchableOpacity>
               </>
             )}
-             {status === "Berjalan" && (
+            {status === "Berjalan" && (
               <>
                 <TouchableOpacity
                   style={tw`bg-green-500 py-1.5 px-4 rounded-full flex-row items-center justify-center ${
@@ -290,122 +327,136 @@ export default function DetailKegiatanScreen() {
               Kegiatan ditolak oleh admin karena:
             </Text>
             <Text style={tw`text-red-500 text-sm italic`}>
-             {detailKegiatan?.reject_note}
+              {detailKegiatan?.reject_note}
             </Text>
           </View>
         )}
-        <View style={tw`mt-3`}>
-          <Text style={tw`text-black text-lg font-medium`}>{namaKegiatan}</Text>
+
+        {/* Image Display */}
+        {image && (
+          <>
+            <Image
+              source={{ uri: `${API_URL}/${image}` }}
+              style={tw`w-full h-40 rounded-lg mt-4 mb-4`}
+              resizeMode="cover"
+            />
+          </>
+        )}
+
+        <View>
+          <Text
+            style={tw`text-black text-lg font-medium ${image ? "" : "mt-3"}`}>
+            {namaKegiatan}
+          </Text>
           <Text style={tw`text-gray-500 text-sm mt-1`}>
             Topic: {topic}, Event: {jenisKegiatan}
           </Text>
-        </View>
-        <View style={tw`h-0.5 bg-gray-200 mt-5 mb-2`} />
-        <ScrollView
-          style={tw`mb-20`}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={tw`pb-20`}
-          refreshControl={
-            <RefreshControl
-              refreshing={loadingDetailKegiatan}
-              onRefresh={() => {}}
-              colors={["#2563eb"]}
-              tintColor="#2563eb"
-            />
-          }>
-          <View style={tw`mt-3 flex-row justify-between items-center`}>
-            <Text style={tw`text-gray-700 font-sm`}>
-              {formatDate(startDate)} - {formatDate(endDate)}
+          <View style={tw`flex-row items-center mt-3`}>
+            <Text style={tw`text-blue-500 text-sm mr-2`}>
+              Average Rating: {averageRating.toFixed(1)}
             </Text>
-            {(status === "Draft" || status === "Verified") && (
-              <Text style={tw`text-red-500 text-sm italic`}>
-                Deadline: {formatDate(deadline)}
-              </Text>
+            {averageRating > 0 && (
+              <View style={tw`flex-row items-center`}>
+                {[...Array(5)].map((_, index) => (
+                  <Ionicons
+                    key={index}
+                    name={
+                      index < Math.floor(averageRating)
+                        ? "star"
+                        : "star-outline"
+                    }
+                    size={16}
+                    color={
+                      index < Math.floor(averageRating) ? "#FFD700" : "#D3D3D3"
+                    }
+                    style={tw`ml-0.5`}
+                  />
+                ))}
+              </View>
             )}
           </View>
-          <Text style={tw`text-black font-sm mt-4`}>
-            {provinsi}, {kabupaten}
+        </View>
+        <View style={tw`h-0.5 bg-gray-200 mt-5 mb-2`} />
+        <View style={tw`mt-3 flex-row justify-between items-center`}>
+          <Text style={tw`text-gray-700 font-sm`}>
+            {formatDate(startDate)} - {formatDate(endDate)}
           </Text>
-          <Text style={tw`text-gray-600 font-sm mt-2`}>{location}</Text>
-          <View style={tw`h-0.5 bg-gray-200 mt-4 mb-2`} />
-          <View style={tw`flex-row items-center justify-between`}>
-            <Text style={tw`text-gray-600 font-sm mt-3`}>
-              Jumlah Relawan Dibutuhkan:{" "}
+          {(status === "Draft" || status === "Verified") && (
+            <Text style={tw`text-red-500 text-sm italic`}>
+              Deadline: {formatDate(deadline)}
             </Text>
-            <Text style={tw`text-gray-800 font-sm mt-3 italic`}>
-              {jumlahRelawan} Orang
-            </Text>
-          </View>
-          <View style={tw`flex-row items-center justify-between`}>
-            <Text style={tw`text-gray-600 font-sm mt-3`}>
-              Total Jam Kerja:{" "}
-            </Text>
-            <Text style={tw`text-gray-800 font-sm mt-3 italic`}>
-              -+ {totalJamKerja} Jam
-            </Text>
-          </View>
-          <View style={tw`flex-row items-center justify-between`}>
-            <Text style={tw`text-gray-600 font-sm mt-3`}>
-              Kriteria Relawan:{" "}
-            </Text>
-            <Text style={tw`text-gray-800 font-sm mt-3 italic`}>
-              {kriteriaRelawan}
-            </Text>
-          </View>
-          <View style={tw`h-0.5 bg-gray-200 mt-4 mb-2`} />
+          )}
+        </View>
+        <Text style={tw`text-black font-sm mt-4`}>
+          {provinsi}, {kabupaten}
+        </Text>
+        <Text style={tw`text-gray-600 font-sm mt-2`}>{location}</Text>
+        <View style={tw`h-0.5 bg-gray-200 mt-4 mb-2`} />
+        <View style={tw`flex-row items-center justify-between`}>
           <Text style={tw`text-gray-600 font-sm mt-3`}>
-            Deskripsi {deskripsiKegiatan}
+            Jumlah Relawan Dibutuhkan:{" "}
           </Text>
-          <Text style={tw`text-gray-600 font-sm mt-3`}>
-            Tugas {tugasRelawan}
+          <Text style={tw`text-gray-800 font-sm mt-3 italic`}>
+            {jumlahRelawan} Orang
           </Text>
-          <View style={tw`h-0.5 bg-gray-200 mt-3 mb-2`} />
-          <>
-            <View style={tw`mt-3 justify-between flex-row items-center`}>
-              <Text style={tw`text-black text-sm italic mt-3`}>
-                List Relawan
-              </Text>
-              <Text style={tw`text-gray-500 text-sm italic`}>
-                Total: {detailKegiatan?.subs_kegiatan?.length} Relawan
-              </Text>
-            </View>
-            {detailKegiatan?.subs_kegiatan?.map((subs) => (
-              <TouchableOpacity
-                onPress={() => handleVerifikasi(subs.subs_kegiatan_id || 0)}
-                key={subs.subs_kegiatan_id}>
-                <View
-                  style={tw`flex-row items-center justify-between bg-gray-200 p-2 py-2 rounded-md mt-3 ${
-                    subs.is_verified === "X" ? "bg-red-200" : ""
-                  }`}>
-                  <Text style={tw`text-gray-600 text-sm`}>
-                    {subs.user?.nama}
-                  </Text>
-                  {subs.is_verified === "Y" ? (
-                    <Text style={tw`text-blue-500 italic text-sm`}>
-                      Diterima
-                    </Text>
-                  ) : subs.is_verified === "X" ? (
-                    <Text style={tw`text-red-500 italic text-sm`}>Ditolak</Text>
-                  ) : (
-                    <>
-                      {status === "Verified" && (
-                        <TouchableOpacity
-                          style={tw`bg-blue-500 px-3 py-1 rounded-md`}
-                          onPress={() =>
-                            handleVerifikasi(subs.subs_kegiatan_id || 0)
-                          }>
-                          <Text style={tw`text-white text-xs`}>Verifikasi</Text>
-                        </TouchableOpacity>
-                      )}
-                    </>
-                  )}
-                </View>
-              </TouchableOpacity>
-            ))}
-          </>
-        </ScrollView>
-      </View>
-
+        </View>
+        <View style={tw`flex-row items-center justify-between`}>
+          <Text style={tw`text-gray-600 font-sm mt-3`}>Total Jam Kerja: </Text>
+          <Text style={tw`text-gray-800 font-sm mt-3 italic`}>
+            -+ {totalJamKerja} Jam
+          </Text>
+        </View>
+        <View style={tw`flex-row items-center justify-between`}>
+          <Text style={tw`text-gray-600 font-sm mt-3`}>Kriteria Relawan: </Text>
+          <Text style={tw`text-gray-800 font-sm mt-3 italic`}>
+            {kriteriaRelawan}
+          </Text>
+        </View>
+        <View style={tw`h-0.5 bg-gray-200 mt-4 mb-2`} />
+        <Text style={tw`text-gray-600 font-sm mt-3`}>
+          Deskripsi {deskripsiKegiatan}
+        </Text>
+        <Text style={tw`text-gray-600 font-sm mt-3`}>Tugas {tugasRelawan}</Text>
+        <View style={tw`h-0.5 bg-gray-200 mt-3 mb-2`} />
+        <View>
+          <View style={tw`mt-3 justify-between flex-row items-center`}>
+            <Text style={tw`text-black text-sm italic mt-3`}>List Relawan</Text>
+            <Text style={tw`text-gray-500 text-sm italic`}>
+              Total: {detailKegiatan?.subs_kegiatan?.length} Relawan
+            </Text>
+          </View>
+          {detailKegiatan?.subs_kegiatan?.map((subs) => (
+            <TouchableOpacity
+              onPress={() => handleVerifikasi(subs.subs_kegiatan_id || 0)}
+              key={subs.subs_kegiatan_id}>
+              <View
+                style={tw`flex-row items-center justify-between bg-gray-200 p-2 py-2 rounded-md mt-3 ${
+                  subs.is_verified === "X" ? "bg-red-200" : ""
+                }`}>
+                <Text style={tw`text-gray-600 text-sm`}>{subs.user?.nama}</Text>
+                {subs.is_verified === "Y" ? (
+                  <Text style={tw`text-blue-500 italic text-sm`}>Diterima</Text>
+                ) : subs.is_verified === "X" ? (
+                  <Text style={tw`text-red-500 italic text-sm`}>Ditolak</Text>
+                ) : (
+                  <>
+                    {status === "Verified" && (
+                      <TouchableOpacity
+                        style={tw`bg-blue-500 px-3 py-1 rounded-md`}
+                        onPress={() =>
+                          handleVerifikasi(subs.subs_kegiatan_id || 0)
+                        }>
+                        <Text style={tw`text-white text-xs`}>Verifikasi</Text>
+                      </TouchableOpacity>
+                    )}
+                  </>
+                )}
+              </View>
+            </TouchableOpacity>
+          ))}
+          <View style={tw`h-8`} />
+        </View>
+      </ScrollView>
       <ModalApply
         modalVisible={modalVisible}
         setModalVisible={setModalVisible}
@@ -414,6 +465,7 @@ export default function DetailKegiatanScreen() {
         isPertanyaan={isPertanyaan}
         handleConfirmVerifikasi={handleConfirmVerifikasi}
         handleConfirmTolak={handleConfirmTolak}
+        refetch={() => refetchKegiatan(Number(id))}
       />
     </View>
   );

@@ -3,9 +3,18 @@ import { useRegisOrganisasi } from "@/src/hooks/Auth/useRegisOrganisasi";
 import { useHooksKabupaten } from "@/src/hooks/Master/useHooksKabupaten";
 import { useHooksProvinsi } from "@/src/hooks/Master/useHooksProvinsi";
 import Ionicons from "@expo/vector-icons/build/Ionicons";
+import * as DocumentPicker from "expo-document-picker";
+import * as FileSystem from "expo-file-system";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from "react-native";
 import tw from "twrnc";
 
 const Signuporg = () => {
@@ -21,49 +30,230 @@ const Signuporg = () => {
   const [websiteOrganisasi, setWebsiteOrganisasi] = useState("");
   const [deskripsi, setDeskripsi] = useState("");
   const [phone, setPhone] = useState("");
+
+  // Validation state
+  const [namaOrganisasiError, setNamaOrganisasiError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [provinsiError, setProvinsiError] = useState("");
+  const [kabupatenError, setKabupatenError] = useState("");
+  const [alamatError, setAlamatError] = useState("");
+  const [websiteError, setWebsiteError] = useState("");
+  const [deskripsiError, setDeskripsiError] = useState("");
+  const [dokumenPendukung, setDokumenPendukung] = useState("");
+  const [dokumenPendukungError, setDokumenPendukungError] = useState("");
   // Hooks
   const { provinsi, loading: loadingProvinsi } = useHooksProvinsi();
-  const { kabupaten, loading: loadingKabupaten } = useHooksKabupaten(selectedProvinsi);
-  const { registerOrganisasi, loading: loadingRegister, error: errorRegister } = useRegisOrganisasi();
+  const { kabupaten, loading: loadingKabupaten } =
+    useHooksKabupaten(selectedProvinsi);
+  const {
+    registerOrganisasi,
+    loading: loadingRegister,
+    error: errorRegister
+  } = useRegisOrganisasi();
+
+  // Validation functions
+  const validateNamaOrganisasi = (text: string) => {
+    if (!text) {
+      setNamaOrganisasiError("Nama organisasi wajib diisi");
+    } else if (text.length < 5) {
+      setNamaOrganisasiError("Nama organisasi minimal 5 karakter");
+    } else {
+      setNamaOrganisasiError("");
+    }
+  };
+
+  const validateEmail = (text: string) => {
+    if (!text) {
+      setEmailError("Email wajib diisi");
+    } else if (!text.includes("@")) {
+      setEmailError("Email harus mengandung @");
+    } else {
+      setEmailError("");
+    }
+  };
+
+  const validatePassword = (text: string) => {
+    if (!text) {
+      setPasswordError("Password wajib diisi");
+    } else if (!/(?=.*[A-Z])/.test(text)) {
+      setPasswordError("Password harus mengandung minimal 1 huruf kapital");
+    } else if (!/(?=.*[0-9])/.test(text)) {
+      setPasswordError("Password harus mengandung minimal 1 angka");
+    } else {
+      setPasswordError("");
+    }
+  };
+
+  const validatePhone = (text: string) => {
+    if (!text) {
+      setPhoneError("Nomor telepon wajib diisi");
+    } else if (!/^\d+$/.test(text)) {
+      setPhoneError("Nomor telepon harus berupa angka");
+    } else {
+      setPhoneError("");
+    }
+  };
+
+  const validateProvinsi = (value: number) => {
+    if (!value) {
+      setProvinsiError("Provinsi wajib dipilih");
+    } else {
+      setProvinsiError("");
+    }
+  };
+
+  const validateKabupaten = (value: number) => {
+    if (!value) {
+      setKabupatenError("Kabupaten wajib dipilih");
+    } else {
+      setKabupatenError("");
+    }
+  };
+
+  const validateAlamat = (text: string) => {
+    if (!text) {
+      setAlamatError("Alamat wajib diisi");
+    } else {
+      setAlamatError("");
+    }
+  };
+
+  const validateWebsite = (text: string) => {
+    if (!text) {
+      setWebsiteError("Website/Social media wajib diisi");
+    } else {
+      setWebsiteError("");
+    }
+  };
+
+  const validateDeskripsi = (text: string) => {
+    if (!text) {
+      setDeskripsiError("Deskripsi wajib diisi");
+    } else {
+      setDeskripsiError("");
+    }
+  };
+
+  const validateDokumenPendukung = (text: string) => {
+    if (!text) {
+      setDokumenPendukungError("Dokumen pendukung wajib diisi");
+    } else {
+      setDokumenPendukungError("");
+    }
+  };
+
+  const pickFile = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: [
+          'application/pdf',
+          'application/msword',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'image/*'
+        ],
+        copyToCacheDirectory: true
+      });
+
+      if (!result.canceled) {
+        const selectedFile = result.assets[0];
+        setDokumenPendukung(selectedFile.uri);
+        
+        // Convert to base64
+        const base64 = await FileSystem.readAsStringAsync(selectedFile.uri, {
+          encoding: FileSystem.EncodingType.Base64
+        });
+        setDokumenPendukung(base64);
+      }
+    } catch (error) {
+      console.error("Error picking file:", error);
+      Alert.alert("Error", "Failed to pick file. Please try again.");
+    }
+  };
+
   // Function
   const handleSubmit = async () => {
-    if (!namaOrganisasi || !email || !password || !selectedProvinsi || !selectedKabupaten) {
-      Alert.alert('Error', 'Mohon lengkapi semua data');
+    // Validate all fields before submission
+    validateNamaOrganisasi(namaOrganisasi);
+    validateEmail(email);
+    validatePassword(password);
+    validatePhone(phone);
+    validateProvinsi(selectedProvinsi);
+    validateKabupaten(selectedKabupaten);
+    validateAlamat(alamat);
+    validateWebsite(websiteOrganisasi);
+    validateDeskripsi(deskripsi);
+    validateDokumenPendukung(dokumenPendukung);
+    // Check if there are any errors
+    if (
+      namaOrganisasiError ||
+      emailError ||
+      passwordError ||
+      phoneError ||
+      provinsiError ||
+      kabupatenError ||
+      alamatError ||
+      websiteError ||
+      deskripsiError ||
+      dokumenPendukungError
+    ) {
+      Alert.alert("Error", "Mohon perbaiki kesalahan pada form");
       return;
     }
+
+    if (
+      !namaOrganisasi ||
+      !email ||
+      !password ||
+      !selectedProvinsi ||
+      !selectedKabupaten ||
+      !alamat ||
+      !websiteOrganisasi ||
+      !deskripsi ||
+      !phone ||
+      !dokumenPendukung
+    ) {
+      Alert.alert("Error", "Mohon lengkapi semua data");
+      return;
+    }
+
     await registerOrganisasi({
       nama: namaOrganisasi,
-      email, password,
+      email,
+      password,
       kabupaten_id: selectedKabupaten,
       provinsi_id: selectedProvinsi,
       website_organisasi: websiteOrganisasi,
       description: deskripsi,
       alamat: alamat,
       phone: phone,
+      dokumen_pendukung: dokumenPendukung
     });
     if (errorRegister) {
-      Alert.alert('Error', errorRegister);
+      Alert.alert("Error", errorRegister);
     } else {
-      Alert.alert('Success', 'Berhasil membuat akun organisasi, silahkan login');
-      router.push('/login');
+      Alert.alert(
+        "Success",
+        "Berhasil membuat akun organisasi, silahkan login"
+      );
+      router.push("/login");
     }
   };
-  
+
   return (
     <View style={tw`flex-1 bg-white`}>
       <ScrollView
         style={tw`flex-1`}
         contentContainerStyle={tw`p-6 pb-0 mb-0`}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
+        keyboardShouldPersistTaps="handled">
         <View style={tw`mt-10`}>
           <View style={tw`mb-5`}>
             <Text style={tw`text-xl font-bold text-black ml-3 mb-2 text-left `}>
               Create Organisasi Account
             </Text>
-            <Text
-              style={tw`text-sm text-gray-700 ml-3 text-left italic mr-3`}>
+            <Text style={tw`text-sm text-gray-700 ml-3 text-left italic mr-3`}>
               Create an account to get started. Please fill in the form below.
             </Text>
           </View>
@@ -87,9 +277,17 @@ const Signuporg = () => {
                 placeholder="Nama Organisasi"
                 keyboardType="default"
                 autoCapitalize="none"
-                onChangeText={(text) => setNamaOrganisasi(text)}
+                onChangeText={(text) => {
+                  setNamaOrganisasi(text);
+                  validateNamaOrganisasi(text);
+                }}
                 value={namaOrganisasi}
               />
+              {namaOrganisasiError ? (
+                <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>
+                  {namaOrganisasiError}
+                </Text>
+              ) : null}
             </View>
             <View style={tw`mb-3`}>
               <TextInput
@@ -97,9 +295,17 @@ const Signuporg = () => {
                 placeholder="Email"
                 keyboardType="email-address"
                 autoCapitalize="none"
-                onChangeText={(text) => setEmail(text)}
+                onChangeText={(text) => {
+                  setEmail(text);
+                  validateEmail(text);
+                }}
                 value={email}
               />
+              {emailError ? (
+                <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>
+                  {emailError}
+                </Text>
+              ) : null}
             </View>
             <View
               style={tw`border border-gray-200 rounded-full px-4 py-4 mb-3 bg-white flex-row items-center`}>
@@ -107,7 +313,10 @@ const Signuporg = () => {
                 style={tw`flex-1 text-black`}
                 placeholder="Password"
                 secureTextEntry={!showPassword}
-                onChangeText={(text) => setPassword(text)}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  validatePassword(text);
+                }}
                 value={password}
               />
               <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
@@ -119,6 +328,11 @@ const Signuporg = () => {
                 />
               </TouchableOpacity>
             </View>
+            {passwordError ? (
+              <Text style={tw`text-red-500 text-xs ml-4 mt-1 mb-3`}>
+                {passwordError}
+              </Text>
+            ) : null}
             <DropdownComponent
               data={[
                 ...provinsi.map((item) => ({
@@ -130,10 +344,16 @@ const Signuporg = () => {
               value={selectedProvinsi}
               onChange={(value) => {
                 setSelectedProvinsi(parseInt(value));
+                validateProvinsi(parseInt(value));
               }}
               hasError={false}
               loading={loadingProvinsi}
             />
+            {provinsiError ? (
+              <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>
+                {provinsiError}
+              </Text>
+            ) : null}
             <DropdownComponent
               data={[
                 ...kabupaten.map((item) => ({
@@ -145,29 +365,55 @@ const Signuporg = () => {
               value={selectedKabupaten}
               onChange={(value) => {
                 setSelectedKabupaten(parseInt(value));
+                validateKabupaten(parseInt(value));
               }}
               hasError={false}
               loading={loadingKabupaten}
             />
+            {kabupatenError ? (
+              <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>
+                {kabupatenError}
+              </Text>
+            ) : null}
             <View style={tw`mb-3`}>
               <TextInput
                 style={tw`border border-gray-200 rounded-full px-4 py-4 bg-white text-black`}
                 placeholder="Alamat"
                 keyboardType="default"
                 autoCapitalize="none"
-                onChangeText={(text) => setAlamat(text)}
+                onChangeText={(text) => {
+                  setAlamat(text);
+                  validateAlamat(text);
+                }}
                 value={alamat}
               />
+              {alamatError ? (
+                <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>
+                  {alamatError}
+                </Text>
+              ) : null}
             </View>
             <View style={tw`mb-3`}>
               <TextInput
                 style={tw`border border-gray-200 rounded-full px-4 py-4 bg-white text-black`}
                 placeholder="Nomor Telepon"
-                keyboardType="default"
+                keyboardType="phone-pad"
+                maxLength={16}
                 autoCapitalize="none"
-                onChangeText={(text) => setPhone(text)}
+                onChangeText={(text) => {
+                  const numericText = text.replace(/[^0-9]/g, "");
+                  if (numericText !== phone) {
+                    setPhone(numericText);
+                    validatePhone(numericText);
+                  }
+                }}
                 value={phone}
               />
+              {phoneError ? (
+                <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>
+                  {phoneError}
+                </Text>
+              ) : null}
             </View>
             <View style={tw`mb-3`}>
               <TextInput
@@ -175,9 +421,17 @@ const Signuporg = () => {
                 placeholder="Website Organisasi / Social Media"
                 keyboardType="default"
                 autoCapitalize="none"
-                onChangeText={(text) => setWebsiteOrganisasi(text)}
+                onChangeText={(text) => {
+                  setWebsiteOrganisasi(text);
+                  validateWebsite(text);
+                }}
                 value={websiteOrganisasi}
               />
+              {websiteError ? (
+                <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>
+                  {websiteError}
+                </Text>
+              ) : null}
             </View>
             <View style={tw`mb-3`}>
               <TextInput
@@ -185,9 +439,39 @@ const Signuporg = () => {
                 placeholder="Deskripsi"
                 keyboardType="default"
                 autoCapitalize="none"
-                onChangeText={(text) => setDeskripsi(text)}
+                onChangeText={(text) => {
+                  setDeskripsi(text);
+                  validateDeskripsi(text);
+                }}
                 value={deskripsi}
               />
+              {deskripsiError ? (
+                <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>
+                  {deskripsiError}
+                </Text>
+              ) : null}
+            </View>
+            <View style={tw`w-full mb-3`}>
+            <TouchableOpacity
+              style={tw`text-black bg-white py-4 px-4 rounded-full w-full border border-gray-200 flex-row items-center justify-center`}
+              onPress={pickFile}>
+              <Ionicons
+                name="document-outline"
+                size={24}
+                color="gray"
+                style={tw`mr-2`}
+              />
+              <Text style={tw`text-gray-500`}>
+                {dokumenPendukung ? "Change Dokumen Pendukung" : "Select Dokumen Pendukung"}
+              </Text>
+            </TouchableOpacity>
+            {dokumenPendukung && (
+              <View style={tw`mt-2 p-3 bg-gray-100 rounded-lg`}>
+                <Text style={tw`text-gray-700 text-sm`}>
+                  File selected successfully
+                </Text>
+              </View>
+            )}
             </View>
           </View>
         </View>
@@ -197,7 +481,7 @@ const Signuporg = () => {
             onPress={handleSubmit}
             disabled={loadingRegister}>
             <Text style={tw`text-white font-bold`}>
-              {loadingRegister ? 'Loading...' : 'Sign Up'}
+              {loadingRegister ? "Loading..." : "Sign Up"}
             </Text>
           </TouchableOpacity>
         </View>

@@ -8,12 +8,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
-  Alert,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    Alert,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from "react-native";
 import tw from "twrnc";
 
@@ -38,6 +38,67 @@ export default function UpdateProfileRelawanScreen() {
   const { kabupaten, loading: loadingKabupaten } = useHooksKabupaten(selectedProvinsi || 0);
   const [selectedKabupaten, setSelectedKabupaten] = useState<number | null>(null);
 
+  // Validation state
+  const [namaError, setNamaError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [alamatError, setAlamatError] = useState("");
+  const [provinsiError, setProvinsiError] = useState("");
+  const [kabupatenError, setKabupatenError] = useState("");
+
+  // Validation functions
+  const validateNama = (text: string) => {
+    if (!text) {
+      setNamaError("Nama wajib diisi");
+    } else if (text.length < 5) {
+      setNamaError("Nama minimal 5 karakter");
+    } else {
+      setNamaError("");
+    }
+  };
+
+  const validateEmail = (text: string) => {
+    if (!text) {
+      setEmailError("Email wajib diisi");
+    } else if (!text.includes("@")) {
+      setEmailError("Email harus mengandung @");
+    } else {
+      setEmailError("");
+    }
+  };
+
+  const validatePhone = (text: string) => {
+    if (text && !/^\d+$/.test(text)) {
+      setPhoneError("Nomor telepon harus berupa angka");
+    } else {
+      setPhoneError("");
+    }
+  };
+
+  const validateAlamat = (text: string) => {
+    if (text && text.length < 5) {
+      setAlamatError("Alamat minimal 5 karakter");
+    } else {
+      setAlamatError("");
+    }
+  };
+
+  const validateProvinsi = (value: number | null) => {
+    if (!value) {
+      setProvinsiError("Provinsi wajib dipilih");
+    } else {
+      setProvinsiError("");
+    }
+  };
+
+  const validateKabupaten = (value: number | null) => {
+    if (!value) {
+      setKabupatenError("Kabupaten wajib dipilih");
+    } else {
+      setKabupatenError("");
+    }
+  };
+
   // Set initial data from profile
   useEffect(() => {
     if (profile) {
@@ -51,8 +112,22 @@ export default function UpdateProfileRelawanScreen() {
   }, [profile]);
 
   const handleSubmit = async () => {
-    if (!nama || !email) {
-      Alert.alert('Error', 'Nama dan Email wajib diisi');
+    // Validate all fields before submission
+    validateNama(nama);
+    validateEmail(email);
+    validatePhone(phone);
+    validateAlamat(alamat);
+    validateProvinsi(selectedProvinsi);
+    validateKabupaten(selectedKabupaten);
+
+    // Check if there are any errors
+    if (namaError || emailError || phoneError || alamatError || provinsiError || kabupatenError) {
+      Alert.alert('Error', 'Mohon perbaiki kesalahan pada form');
+      return;
+    }
+
+    if (!nama || !email || !selectedProvinsi || !selectedKabupaten) {
+      Alert.alert('Error', 'Nama, Email, Provinsi, dan Kabupaten wajib diisi');
       return;
     }
 
@@ -129,8 +204,14 @@ export default function UpdateProfileRelawanScreen() {
               placeholderTextColor="gray"
               autoCapitalize="none"
               value={nama}
-              onChangeText={setNama}
+              onChangeText={(text) => {
+                setNama(text);
+                validateNama(text);
+              }}
             />
+            {namaError ? (
+              <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>{namaError}</Text>
+            ) : null}
           </View>
 
           <View style={tw`w-full mb-3`}>
@@ -142,11 +223,16 @@ export default function UpdateProfileRelawanScreen() {
               placeholder="Pilih Provinsi (*)"
               value={selectedProvinsi?.toString() || ""}
               onChange={(value) => {
-                setSelectedProvinsi(value ? parseInt(value) : null);
+                const provinsiValue = value ? parseInt(value) : null;
+                setSelectedProvinsi(provinsiValue);
+                validateProvinsi(provinsiValue);
                 setSelectedKabupaten(null); // Reset kabupaten when provinsi changes
               }}
               loading={loadingProvinsi}
             />
+            {provinsiError ? (
+              <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>{provinsiError}</Text>
+            ) : null}
           </View>
 
           <View style={tw`w-full mb-3`}>
@@ -158,11 +244,16 @@ export default function UpdateProfileRelawanScreen() {
               placeholder="Pilih Kabupaten (*)"
               value={selectedKabupaten?.toString() || ""}
               onChange={(value) => {
-                setSelectedKabupaten(value ? parseInt(value) : null);
+                const kabupatenValue = value ? parseInt(value) : null;
+                setSelectedKabupaten(kabupatenValue);
+                validateKabupaten(kabupatenValue);
               }}
               loading={loadingKabupaten}
               disabled={!selectedProvinsi}
             />
+            {kabupatenError ? (
+              <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>{kabupatenError}</Text>
+            ) : null}
           </View>
 
           <View style={tw`w-full mb-3`}>
@@ -172,8 +263,14 @@ export default function UpdateProfileRelawanScreen() {
               placeholderTextColor="gray"
               autoCapitalize="none"
               value={email}
-              onChangeText={setEmail}
+              onChangeText={(text) => {
+                setEmail(text);
+                validateEmail(text);
+              }}
             />
+            {emailError ? (
+              <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>{emailError}</Text>
+            ) : null}
           </View>
 
           <View style={tw`w-full mb-3`}>  
@@ -182,9 +279,18 @@ export default function UpdateProfileRelawanScreen() {
               placeholder="No. HP"
               placeholderTextColor="gray"
               autoCapitalize="none"
+              keyboardType="phone-pad"
+              maxLength={16}
               value={phone}
-              onChangeText={setPhone}
+              onChangeText={(text) => {
+                const numericText = text.replace(/[^0-9]/g, '');
+                setPhone(numericText);
+                validatePhone(numericText);
+              }}
             />
+            {phoneError ? (
+              <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>{phoneError}</Text>
+            ) : null}
           </View>
 
           <View style={tw`w-full mb-3`}>
@@ -194,8 +300,14 @@ export default function UpdateProfileRelawanScreen() {
               placeholderTextColor="gray"
               autoCapitalize="none"
               value={alamat}
-              onChangeText={setAlamat}
+              onChangeText={(text) => {
+                setAlamat(text);
+                validateAlamat(text);
+              }}
             />
+            {alamatError ? (
+              <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>{alamatError}</Text>
+            ) : null}
           </View>
           <View style={tw`w-full mb-15 mt-5`}>
             <TouchableOpacity 

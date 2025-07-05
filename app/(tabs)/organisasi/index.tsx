@@ -1,11 +1,13 @@
 import { useAuthContext } from "@/src/contexts/AuthContext";
 import { useFetchTopic } from "@/src/hooks/Master/useFetchTopic";
+import { useCheckVerified } from "@/src/hooks/Organisasi/useCheckVerified";
 import { useFetchKegiatanSelf } from "@/src/hooks/Organisasi/useFetchKegiatanSelf";
 import { KegiatanType, TopicType } from "@/src/types/types";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
+  Alert,
   Image,
   RefreshControl,
   ScrollView,
@@ -34,7 +36,9 @@ export default function HomeScreen() {
     topic_id: selectedTopicId || undefined
   });
   const [kegiatanList, setKegiatanList] = useState<KegiatanType[]>([]);
-
+  const { isVerified, refetch: refetchVerified } = useCheckVerified();
+  const [isVerifiedState, setIsVerifiedState] = useState(isVerified);
+  
   useEffect(() => {
     if (topic) {
       setTopicList(topic);
@@ -42,7 +46,10 @@ export default function HomeScreen() {
     if (kegiatan) {
       setKegiatanList(kegiatan);
     }
-  }, [topic, kegiatan]);
+    if (isVerified !== undefined) {
+      setIsVerifiedState(isVerified);
+    }
+  }, [topic, kegiatan, isVerified]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -61,6 +68,36 @@ export default function HomeScreen() {
       month: "long",
       year: "numeric"
     });
+  };
+
+  const handleAddKegiatan = async () => {
+    try {
+      // Fetch the latest verification status and get the result
+      const currentVerifiedStatus = await refetchVerified();
+      console.log("Current verification status:", currentVerifiedStatus);
+      
+      if (currentVerifiedStatus === true) {
+        router.push({
+          pathname: "/organisasi/kegiatan/tambah"
+        });
+      } else if (currentVerifiedStatus === false) {
+        Alert.alert(
+          "Akun Anda di Tolak",
+          "Silakan Hubungi Admin untuk mengetahui alasan akun Anda di Tolak"
+        );
+      } else {
+        Alert.alert(
+          "Akun Anda Belum Terverifikasi",
+          "Pembuatan Kegiatan Gagal, Mohon tunggu proses verifikasi akun Anda"
+        );
+      }
+    } catch (error) {
+      console.error("Error checking verification status:", error);
+      Alert.alert(
+        "Error",
+        "Terjadi kesalahan saat memeriksa status verifikasi. Silakan coba lagi."
+      );
+    }
   };
 
   return (
@@ -105,34 +142,41 @@ export default function HomeScreen() {
             <Text style={tw`text-black text-xs font-medium ml-2`}>Filter</Text>
           </View>
         </View>
-        <ScrollView horizontal style={tw`mt-4 py-1`} showsHorizontalScrollIndicator={false}>
+        <ScrollView
+          horizontal
+          style={tw`mt-4 py-1`}
+          showsHorizontalScrollIndicator={false}>
           <TouchableOpacity
             onPress={() => handleTopicSelect(null)}
             style={tw`${
-              selectedTopicId === null 
-                ? 'bg-gray-500 border-gray-500' 
-                : 'bg-gray-100 border-gray-100'
+              selectedTopicId === null
+                ? "bg-gray-500 border-gray-500"
+                : "bg-gray-100 border-gray-100"
             } rounded-full px-4 py-2 mr-2 border`}>
-            <Text style={tw`${
-              selectedTopicId === null 
-                ? 'text-white' 
-                : 'text-black'
-            } text-xs`}>Semua</Text>
+            <Text
+              style={tw`${
+                selectedTopicId === null ? "text-white" : "text-black"
+              } text-xs`}>
+              Semua
+            </Text>
           </TouchableOpacity>
           {topicList.map((topic) => (
             <TouchableOpacity
               key={topic.topic_id}
               onPress={() => handleTopicSelect(topic.topic_id || null)}
               style={tw`${
-                selectedTopicId === topic.topic_id 
-                  ? 'bg-gray-500 border-gray-500' 
-                  : 'bg-gray-100 border-gray-100'
+                selectedTopicId === topic.topic_id
+                  ? "bg-gray-500 border-gray-500"
+                  : "bg-gray-100 border-gray-100"
               } rounded-full px-4 py-2 mr-2 border`}>
-              <Text style={tw`${
-                selectedTopicId === topic.topic_id 
-                  ? 'text-white' 
-                  : 'text-black'
-              } text-xs`}>{topic.topic_nama}</Text>
+              <Text
+                style={tw`${
+                  selectedTopicId === topic.topic_id
+                    ? "text-white"
+                    : "text-black"
+                } text-xs`}>
+                {topic.topic_nama}
+              </Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -152,7 +196,7 @@ export default function HomeScreen() {
           />
         </View>
       </View>
-      <ScrollView 
+      <ScrollView
         style={tw`px-5 mt-5 mb-20`}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={tw`pb-20`}
@@ -160,22 +204,35 @@ export default function HomeScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={['#2563eb']} // blue-600 color
+            colors={["#2563eb"]} // blue-600 color
             tintColor="#2563eb"
           />
-        }
-      >
+        }>
         {kegiatanList.map((kegiatan) => (
           <TouchableOpacity
             key={kegiatan.kegiatan_id}
-            onPress={() => router.push({
-              pathname: "/organisasi/kegiatan/detail",
-              params: { id: kegiatan.kegiatan_id }
-            })}
-            style={tw`bg-white border border-gray-200 shadow-md rounded-3xl px-3 py-3 mb-6 border border-gray-100 ${kegiatan.status === "Rejected" ? "bg-red-200" : kegiatan.status === "Selesai" ? "bg-blue-200" : "bg-white"}`}>
+            onPress={() =>
+              router.push({
+                pathname: "/organisasi/kegiatan/detail",
+                params: { id: kegiatan.kegiatan_id }
+              })
+            }
+            style={tw`bg-white border border-gray-200 shadow-md rounded-3xl px-3 py-3 mb-6 border border-gray-100 ${
+              kegiatan.status === "Rejected"
+                ? "bg-red-200"
+                : kegiatan.status === "Selesai"
+                ? "bg-blue-200"
+                : "bg-white"
+            }`}>
             <View
               key={kegiatan.kegiatan_id}
-              style={tw`bg-white px-2 py-2 mr-2 ${kegiatan.status === "Rejected" ? "bg-red-200" : kegiatan.status === "Selesai" ? "bg-blue-200" : "bg-white"}`}>
+              style={tw`bg-white px-2 py-2 mr-2 ${
+                kegiatan.status === "Rejected"
+                  ? "bg-red-200"
+                  : kegiatan.status === "Selesai"
+                  ? "bg-blue-200"
+                  : "bg-white"
+              }`}>
               <View style={tw`flex-row items-center mb-3`}>
                 <View style={tw`bg-gray-400 rounded-md px-2 py-1`}>
                   <Text style={tw`text-white text-xs`}>
@@ -242,7 +299,8 @@ export default function HomeScreen() {
               </Text>
               <View style={tw`flex-row items-center mt-2`}>
                 <Text style={tw`text-red-500 text-xs italic`}>
-                  {kegiatan.status === "Draft" && "Menunggu persetujuan dari Admin"}
+                  {kegiatan.status === "Draft" &&
+                    "Menunggu persetujuan dari Admin"}
                   {kegiatan.status === "Verified" && "Terverifikasi"}
                   {kegiatan.status === "Berjalan" && "Sedang Berjalan"}
                   {kegiatan.status === "Selesai" && "Selesai"}
@@ -255,11 +313,12 @@ export default function HomeScreen() {
         ))}
       </ScrollView>
       <TouchableOpacity
-        onPress={() =>
-          router.push({
-            pathname: "/organisasi/kegiatan/tambah"
-          })
-        }
+        // onPress={() =>
+        //   router.push({
+        //     pathname: "/organisasi/kegiatan/tambah"
+        //   })
+        // }
+          onPress={handleAddKegiatan}
         style={tw`absolute bottom-30 right-7 w-13 h-13 bg-blue-600 rounded-full items-center justify-center shadow-lg`}>
         <Ionicons name="add" size={28} color="white" />
       </TouchableOpacity>

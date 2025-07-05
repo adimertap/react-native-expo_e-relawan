@@ -1,3 +1,4 @@
+import { API_URL } from "@/src/constants/env";
 import { useAuthContext } from "@/src/contexts/AuthContext";
 import { useApplyKegiatan } from "@/src/hooks/Relawan/useApplyKegiatan";
 import { useFetchApplyDetailKegiatan } from "@/src/hooks/Relawan/useFetchApplyDetailKegiatan";
@@ -5,6 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
+  Image,
   RefreshControl,
   ScrollView,
   Text,
@@ -31,6 +33,7 @@ export default function DetailApplyKegiatanRelawanScreen() {
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [location, setLocation] = useState<string>("");
+  const [image, setImage] = useState<string>("");
   const [kabupaten, setKabupaten] = useState<string>("");
   const [provinsi, setProvinsi] = useState<string>("");
   const [status, setStatus] = useState<string>("");
@@ -55,6 +58,7 @@ export default function DetailApplyKegiatanRelawanScreen() {
       setLocation(applyDetailKegiatan.kegiatan?.location || "");
       setKabupaten(applyDetailKegiatan.kegiatan?.kabupaten?.kabupaten || "");
       setProvinsi(applyDetailKegiatan.kegiatan?.provinsi?.provinsi || "");
+      setImage(applyDetailKegiatan.kegiatan?.image || "");
       setStatus(applyDetailKegiatan.is_verified || "");
       setStatusKegiatan(applyDetailKegiatan.kegiatan?.status || "");
     }
@@ -72,6 +76,25 @@ export default function DetailApplyKegiatanRelawanScreen() {
     setSelectedSubs(subs_kegiatan_id);
     setModalVisible(true);
   };
+
+  // Calculate average rating
+  const calculateAverageRating = () => {
+    if (
+      !applyDetailKegiatan?.kegiatan?.subs_kegiatan ||
+      applyDetailKegiatan.kegiatan.subs_kegiatan.length === 0
+    ) {
+      return 0;
+    }
+    const ratings = applyDetailKegiatan.kegiatan.subs_kegiatan
+      .map((subs) => subs.rating)
+      .filter((rating) => rating !== null && rating !== undefined);
+    if (ratings.length === 0) {
+      return 0;
+    }
+    const sum = ratings.reduce((acc, rating) => acc + rating, 0);
+    return Number((sum / ratings.length).toFixed(1));
+  };
+  const averageRating = calculateAverageRating();
 
   return (
     <View style={tw`flex-1 bg-gray-50`}>
@@ -95,10 +118,9 @@ export default function DetailApplyKegiatanRelawanScreen() {
           </TouchableOpacity>
         </View>
       </View>
-      <View style={tw`p-6 pt-3 mt-2`}>
+      <View style={tw`flex-1 p-6 pt-3 mt-2`}>
         <View style={tw`flex-row items-center justify-between`}>
-          <Text
-            style={tw`text-white text-xs px-2 py-1 rounded-2xl ${
+          <Text style={tw`text-white text-xs px-2 py-1 rounded-2xl ${
               status === "Y" ? "bg-green-500" : ""
             } ${status === "N" ? "bg-red-500" : ""}`}>
             {status === "Y" && "Diterima"}
@@ -106,14 +128,16 @@ export default function DetailApplyKegiatanRelawanScreen() {
           </Text>
           <View style={tw`h-0.5 bg-gray-200 mt-3 mb-2`} />
           {/* Tambah button add to calendar */}
-          {status === "Y" && applyDetailKegiatan?.kegiatan?.status !== "Selesai" && (
+          {status === "Y" &&
+            applyDetailKegiatan?.kegiatan?.status !== "Selesai" && (
               <TouchableOpacity
                 style={tw`bg-blue-500 rounded-full px-4 py-2 flex-row items-center`}>
                 <Ionicons name="calendar-outline" size={16} color="white" />
                 <Text style={tw`text-white text-xs ml-2`}>Kalender</Text>
               </TouchableOpacity>
             )}
-          {(applyDetailKegiatan?.kegiatan?.status === "Selesai" && applyDetailKegiatan?.rating === null) && (
+          {applyDetailKegiatan?.kegiatan?.status === "Selesai" &&
+            applyDetailKegiatan?.rating === null && (
               <TouchableOpacity
                 onPress={() =>
                   handleReviewKegiatan(
@@ -130,6 +154,15 @@ export default function DetailApplyKegiatanRelawanScreen() {
               </TouchableOpacity>
             )}
         </View>
+        {image && (
+          <View style={tw`mt-4 mb-4`}>
+            <Image
+              source={{ uri: `${API_URL}/${image}` }}
+              style={tw`w-full h-48 rounded-lg`}
+              resizeMode="cover"
+            />
+          </View>
+        )}
         <View style={tw`mt-6`}>
           <Text style={tw`text-black text-lg font-medium`}>{namaKegiatan}</Text>
           <Text style={tw`text-gray-500 text-sm mt-1`}>
@@ -138,12 +171,30 @@ export default function DetailApplyKegiatanRelawanScreen() {
           <Text style={tw`text-blue-500 text-sm mt-1`}>
             Status: {applyDetailKegiatan?.kegiatan?.status}
           </Text>
+          {/* <View style={tw`flex-row items-center mt-3`}>
+            <Text style={tw`text-blue-500 text-sm mr-2`}>
+              Average Rating: {averageRating.toFixed(1)}
+            </Text>
+            {averageRating > 0 && (
+              <View style={tw`flex-row items-center`}>
+                {[...Array(5)].map((_, index) => (
+                  <Ionicons
+                    key={index}
+                    name={index < Math.floor(averageRating) ? "star" : "star-outline"}
+                    size={16}
+                    color={index < Math.floor(averageRating) ? "#FFD700" : "#D3D3D3"}
+                    style={tw`ml-0.5`}
+                  />
+                ))}
+              </View>
+            )}
+          </View> */}
         </View>
         <View style={tw`h-0.5 bg-gray-200 mt-5 mb-2`} />
         <ScrollView
-          style={tw`mb-20`}
+          style={tw`flex-1`}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={tw`pb-20`}
+          contentContainerStyle={tw`pb-32`}
           refreshControl={
             <RefreshControl
               refreshing={loadingApplyDetailKegiatan}
@@ -202,11 +253,13 @@ export default function DetailApplyKegiatanRelawanScreen() {
               </View>
             </>
           )}
-          {applyDetailKegiatan?.kegiatan?.status === "Selesai" && applyDetailKegiatan?.rating !== 0 && applyDetailKegiatan?.rating !== null && (
+          {applyDetailKegiatan?.kegiatan?.status === "Selesai" &&
+            applyDetailKegiatan?.rating !== 0 &&
+            applyDetailKegiatan?.rating !== null && (
               <>
                 <View style={tw`h-0.5 bg-gray-200 mt-8 mb-2`} />
                 <View style={tw`flex-row flex items-center justify-start mt-1`}>
-                  <Text style={tw`text-gray-600 font-sm mt-3`}>Rating: </Text>
+                  <Text style={tw`text-gray-600 font-sm mt-3`}>Rating Kegiatan: </Text>
                   <View style={tw`flex-row items-center`}>
                     {[...Array(applyDetailKegiatan?.rating)].map((_, index) => (
                       <Ionicons
@@ -223,6 +276,33 @@ export default function DetailApplyKegiatanRelawanScreen() {
                   <Text style={tw`text-gray-600 font-sm mt-3`}>Review: </Text>
                   <Text style={tw`text-blue-800 font-sm mt-3 italic`}>
                     {applyDetailKegiatan?.review}
+                  </Text>
+                </View>
+              </>
+            )}
+             {applyDetailKegiatan?.kegiatan?.status === "Selesai" &&
+            applyDetailKegiatan?.rating_for_user !== 0 &&
+            applyDetailKegiatan?.rating_for_user !== null && (
+              <>
+                <View style={tw`h-0.5 bg-gray-200 mt-8 mb-2`} />
+                <View style={tw`flex-row flex items-center justify-start mt-1`}>
+                  <Text style={tw`text-gray-600 font-sm mt-3`}>Rating untuk Anda: </Text>
+                  <View style={tw`flex-row items-center`}>
+                    {[...Array(applyDetailKegiatan?.rating_for_user)].map((_, index) => (
+                      <Ionicons
+                        key={index}
+                        name="star"
+                        size={16}
+                        color="#FFD700"
+                        style={tw`ml-1 mt-3`}
+                      />
+                    ))}
+                  </View>
+                </View>
+                <View style={tw`flex-row flex items-center justify-start mt-1`}>
+                  <Text style={tw`text-gray-600 font-sm mt-3`}>Review: </Text>
+                  <Text style={tw`text-blue-800 font-sm mt-3 italic`}>
+                    {applyDetailKegiatan?.review_for_user}
                   </Text>
                 </View>
               </>

@@ -3,8 +3,10 @@ import ModalUpdateProfile from "@/components/new/ModalUpdateProfile";
 import { useAuthContext } from "@/src/contexts/AuthContext";
 import { useFetchProfileRelawan } from "@/src/hooks/Relawan/useFetchProfile";
 import { UserType } from "@/src/types/types";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
+
 import {
   ActivityIndicator,
   Image,
@@ -130,7 +132,6 @@ export default function ProfileRelawanScreen() {
             <Text style={tw`text-blue-500 text-sm font-medium`}>
               Choose Topic
             </Text>
-
           </TouchableOpacity>
         </View>
       </View>
@@ -185,7 +186,21 @@ export default function ProfileRelawanScreen() {
             </Text>
           </View>
           <View style={tw`h-0.4 bg-gray-100 mt-2 mb-2`} />
-         
+          <View style={tw`flex-row items-center justify-between`}>
+            <Text style={tw`text-blue-500 text-sm font-medium`}>Rating Anda</Text>
+            <View style={tw`flex-row items-center`}>
+              {[...Array(profile?.avg_rating)].map((_, index) => (
+                <Ionicons
+                  key={index}
+                  name="star"
+                  size={16}
+                  color="#FFD700"
+                  style={tw`ml-1 mt-3`}
+                />
+              ))}
+            </View>
+          </View>
+          <View style={tw`h-0.4 bg-gray-100 mt-2 mb-2`} />
           <TouchableOpacity
             onPress={() => handleModalUpdateProfile()}
             style={tw`bg-white border border-gray-400 rounded-lg p-2 mt-4 flex-row items-center justify-center`}>

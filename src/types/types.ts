@@ -25,6 +25,7 @@ export interface UserType {
   profesi?: string;
   photo?: string;
   apk_version?: string;
+  avg_rating?: number;
   created_at?: string;
   provinsi?: ProvinsiType;
   kabupaten?: KabupatenType;
@@ -39,6 +40,7 @@ export interface OrganisasiType {
   tanggal_berdiri?: string;
   website_organisasi?: string;
   alamat?: string;
+  dokumen_pendukung?: string;
   is_verified?: string;
   verified_at?: string;
   active?: string;
@@ -93,6 +95,7 @@ export interface KegiatanType {
   user?: UserType;
   topic?: TopicType;
   perlu_pertanyaan?: string;
+  dokumen_pendukung?: string;
   jenis_kegiatan?: JenisKegiatanType;
   provinsi?: ProvinsiType;
   kabupaten?: KabupatenType;
@@ -114,6 +117,8 @@ export interface SubsKegiatanType {
   created_at?: string;
   rating?: number;
   review?: string;
+  rating_for_user?: number;
+  review_for_user?: string;
 }
 
 export interface NotifikasiType {
