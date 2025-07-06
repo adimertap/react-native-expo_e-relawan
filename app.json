@@ -8,6 +8,11 @@
     "scheme": "mobilereact",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "extra": {
+  "eas": {
+    "projectId": "66b68d87-ef82-41f9-b222-70d76a9a441c"
+  }
+},
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.mobilereact",
@@ -29,16 +34,14 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-notifications",
-      "expo-router",
       [
-        "@react-native-firebase/app",
+        "expo-notifications",
         {
-          "ios_google_services_file": "./GoogleService-Info.plist",
-          "android_google_services_file": "./google-services.json"
+          "icon": "./assets/images/notification-icon.png",
+          "color": "#ffffff"
         }
       ],
-      "@react-native-firebase/messaging",
+      "expo-router",
       [
         "expo-splash-screen",
         {

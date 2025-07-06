@@ -1,12 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
-import Constants from 'expo-constants';
-import * as Notifications from 'expo-notifications';
 import { jwtDecode } from 'jwt-decode';
 import React, { useContext, useEffect, useState } from 'react';
 import { Platform } from 'react-native';
-import { API_URL, TOKEN_KEY } from '../constants/env';
+import { TOKEN_KEY } from '../constants/env';
 import { useAuth } from '../hooks/Auth/useAuth';
+import { useFCMToken } from '../hooks/Auth/useFCMToken';
 
 // Platform-specific storage implementation
 const Storage = {
@@ -59,17 +57,18 @@ interface AuthProps {
   };
   isAuthenticated: boolean;
   initialized: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<{ success: boolean; userData?: any }>;
   logout: () => void;
   loading: boolean;
   error: string | null;
   updateAuthState: (newState: AuthProps['authState']) => void;
+  refreshFCMToken: () => Promise<void>;
 }
 
 const AuthContext = React.createContext<AuthProps>({
   isAuthenticated: false,
   initialized: false,
-  login: function (email: string, password: string): Promise<boolean> {
+  login: function (email: string, password: string): Promise<{ success: boolean; userData?: any }> {
     throw new Error('Function not implemented.');
   },
   logout: function (): void {
@@ -78,6 +77,9 @@ const AuthContext = React.createContext<AuthProps>({
   loading: false,
   error: null,
   updateAuthState: function (newState: AuthProps['authState']): void {
+    throw new Error('Function not implemented.');
+  },
+  refreshFCMToken: function (): Promise<void> {
     throw new Error('Function not implemented.');
   }
 });
@@ -105,6 +107,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     choose_topic: null,
   });
   const { login: loginApi, logout: logoutApi, loading, error } = useAuth();
+  const { registerFCMToken, forceRefreshFCMToken } = useFCMToken();
 
   useEffect(() => {
     // Check for token in storage on mount
@@ -123,6 +126,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             role: (decoded as any)?.role,
             choose_topic: (decoded as any)?.choose_topic,
           });
+          
+          // Register FCM token if user is already logged in (only once)
+          if ((decoded as any)?.user_id) {
+            try {
+              await registerFCMToken((decoded as any).user_id, storedToken);
+            } catch (fcmError) {
+              console.error('Error registering FCM token on app start:', fcmError);
+            }
+          }
         } else {
           setAuthState(prev => ({
             ...prev,
@@ -141,12 +153,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
     
     checkToken();
-  }, []);
+  }, []); // Empty dependency array to run only once on mount
+
+  const refreshFCMToken = async () => {
+    try {
+      if (!authState?.user_id || !authState.token) {
+        console.log('Cannot refresh FCM token: user not authenticated');
+        return;
+      }
+      
+      console.log('Refreshing FCM token for user:', authState.user_id);
+      const success = await forceRefreshFCMToken(authState.user_id, authState.token);
+      if (success) {
+        console.log('FCM token refreshed successfully');
+      } else {
+        console.log('FCM token refresh failed');
+      }
+    } catch (error) {
+      console.error('Error refreshing FCM token:', error);
+    }
+  };
+  
 
   const login = async (email: string, password: string) => {
     const response = await loginApi({ email, password });
     if (response?.token) {
       const decoded = jwtDecode(response.token);
+      
+      // Store token first
+      try {
+        await Storage.setItem(TOKEN_KEY, response.token);
+      } catch (error) {
+        console.error('Error saving token to storage:', error);
+      }
+      
+      // Update auth state
       setAuthState({
         token: response.token,
         authenticated: true,
@@ -157,14 +198,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         role: (decoded as any)?.role,
         choose_topic: (decoded as any)?.choose_topic,
       });
-      try {
-        await Storage.setItem(TOKEN_KEY, response.token);
-      } catch (error) {
-        console.error('Error saving token to storage:', error);
+      
+      // Register FCM token after successful login (only if user_id exists)
+      if ((decoded as any)?.user_id) {
+        console.log('Login successful, registering FCM token for user:', (decoded as any).user_id);
+        try {
+          const fcmSuccess = await registerFCMToken((decoded as any).user_id, response.token);
+          if (fcmSuccess) {
+            console.log('FCM token registered successfully after login');
+          } else {
+            console.log('FCM token registration failed or skipped');
+          }
+        } catch (fcmError) {
+          console.error('Error registering FCM token after login:', fcmError);
+          // Don't fail login if FCM registration fails
+        }
+      } else {
+        console.log('No user_id found in token, skipping FCM registration');
       }
-      return true;
+      
+      return { 
+        success: true, 
+        userData: {
+          user_id: (decoded as any)?.user_id,
+          token: response.token,
+          nama: (decoded as any)?.nama,
+          email: (decoded as any)?.email,
+          role: (decoded as any)?.role,
+          choose_topic: (decoded as any)?.choose_topic,
+        }
+      };
     }
-    return false;
+    return { success: false };
   };
 
   const logout = async () => {
@@ -201,43 +266,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const getFCMToken = async () => {
-    try {
-      // Request permission for notifications
-      const { status } = await Notifications.requestPermissionsAsync();
-      if (status !== 'granted') {
-        console.log('Notification permission not granted');
-        return;
-      }
-
-      // Get the FCM token
-      const token = await Notifications.getExpoPushTokenAsync({
-        projectId: Constants.expoConfig?.extra?.eas?.projectId,
-      });
-
-      // Store token locally
-      await AsyncStorage.setItem('fcmToken', token.data);
-      
-      // If user is logged in, send token to backend
-      if (authState?.user_id) {
-        try {
-          await axios.post(`${API_URL}/api/user/update-fcm-token`, {
-            user_id: authState.user_id,
-            fcm_token: token.data
-          });
-          console.log('FCM token updated successfully');
-        } catch (error) {
-          // console.error('Error updating FCM token:', error);
-        }
-      }
-
-      return token.data;
-    } catch (error) {
-      console.error('Error getting FCM token:', error);
-      return null;
-    }
-  };
-
   const value = {
     authState,
     isAuthenticated: authState.authenticated || false,
@@ -247,6 +275,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loading: loading,
     error: error,
     updateAuthState,
+    refreshFCMToken,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

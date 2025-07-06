@@ -5,13 +5,14 @@ import {
   ThemeProvider
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
+import * as Notifications from 'expo-notifications';
 import { Stack, usePathname, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect } from "react";
 import "react-native-reanimated";
 import { AuthProvider, useAuthContext } from "../src/contexts/AuthContext";
-import { useNotifications } from "../src/utils/notifications";
+import { setupNotificationHandler } from "../src/utils/notificationService";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -19,13 +20,6 @@ function RootLayoutNav() {
   const router = useRouter();
   const { isAuthenticated, initialized, authState } = useAuthContext();
   const pathname = usePathname();
-  const { expoPushToken, registerForPushNotifications } = useNotifications();
-
-  useEffect(() => {
-    if (expoPushToken) {
-      console.log('FCM Token:', expoPushToken);
-    }
-  }, [expoPushToken]);
 
   useEffect(() => {
     const navigate = async () => {
@@ -52,7 +46,8 @@ function RootLayoutNav() {
         "/relawan/kegiatan/detail",
         "/relawan/kegiatan/daftar",
         "/relawan/kegiatan/detailApply",
-        "/relawan/profile/update"
+        "/relawan/profile/update",
+        "/relawan/profile/test-notif"
       ];
 
       if (validPaths.some((path) => pathname.startsWith(path))) {
@@ -104,7 +99,7 @@ function RootLayoutNav() {
           } else if (pathname.startsWith("/(tabs)/organisasi/profile")) {
             console.log("Redirecting to organisasi profile");
             router.replace("/(tabs)/organisasi/profile");
-          } 
+          }
         }
       } else {
         if (
@@ -122,13 +117,27 @@ function RootLayoutNav() {
 
     navigate();
   }, [isAuthenticated, initialized, router, pathname, authState]);
-
-  // Setup notifications when authenticated
   useEffect(() => {
-    if (isAuthenticated) {
-      registerForPushNotifications();
-    }
-  }, [isAuthenticated, registerForPushNotifications]);
+    setupNotificationHandler();
+  }, []);
+  useEffect(() => {
+    // Handle notification tapsa
+    const responseListener = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        console.log('Notification tapped:', response);
+        const data = response.notification.request.content.data;
+        // Navigate based on notification data
+        if (data?.screen) {
+          router.push(data.screen as any);
+        }
+      }
+    );
+  
+    return () => {
+      responseListener.remove();
+    };
+  }, []);
+
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
@@ -142,7 +151,7 @@ function RootLayoutNav() {
         name="organisasi/kegiatan/tambah"
         options={{ headerShown: false }}
       />
-       <Stack.Screen
+      <Stack.Screen
         name="organisasi/profile/update"
         options={{ headerShown: false }}
       />
@@ -166,6 +175,10 @@ function RootLayoutNav() {
       />
       <Stack.Screen
         name="relawan/profile/update"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="relawan/profile/test-notif"
         options={{ headerShown: false }}
       />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

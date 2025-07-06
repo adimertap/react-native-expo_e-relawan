@@ -25,8 +25,6 @@ export default function ProfileScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalUpdateProfileVisible, setModalUpdateProfileVisible] = useState(false);
 
-
-  
   const {
     profile: profileData,
     loading: loadingProfile,
@@ -217,6 +215,13 @@ export default function ProfileScreen() {
             style={tw`bg-white border border-gray-400 rounded-lg p-2 mt-5 flex-row items-center justify-center`}>
             <Text style={tw`text-black text-sm font-medium`}>
               Change Password
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+             onPress={() => router.push("/relawan/profile/test-notif")}
+            style={tw`bg-white border border-gray-400 rounded-lg p-2 mt-4 flex-row items-center justify-center`}>
+            <Text style={tw`text-black text-sm font-medium`}>
+              Test Notification
             </Text>
           </TouchableOpacity>
           <TouchableOpacity

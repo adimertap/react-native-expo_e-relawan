@@ -203,16 +203,23 @@ export default function ProfileRelawanScreen() {
           <View style={tw`h-0.4 bg-gray-100 mt-2 mb-2`} />
           <TouchableOpacity
             onPress={() => handleModalUpdateProfile()}
-            style={tw`bg-white border border-gray-400 rounded-lg p-2 mt-4 flex-row items-center justify-center`}>
+            style={tw`bg-white border border-blue-600 rounded-lg p-2 mt-4 flex-row items-center justify-center`}>
             <Text style={tw`text-black text-sm font-medium`}>
               Update Profile
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
              onPress={() => handleModalChangePassword()}
-            style={tw`bg-white border border-gray-400 rounded-lg p-2 mt-4 flex-row items-center justify-center`}>
+            style={tw`bg-white border border-blue-600 rounded-lg p-2 mt-4 flex-row items-center justify-center`}>
             <Text style={tw`text-black text-sm font-medium`}>
               Change Password
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+             onPress={() => router.push("/relawan/profile/test-notif")}
+            style={tw`bg-white border border-gray-400 rounded-lg p-2 mt-4 flex-row items-center justify-center`}>
+            <Text style={tw`text-black text-sm font-medium`}>
+              Test Notification
             </Text>
           </TouchableOpacity>
           <TouchableOpacity

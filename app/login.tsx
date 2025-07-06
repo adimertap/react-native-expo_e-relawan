@@ -1,8 +1,9 @@
 import { useAuthContext } from "@/src/contexts/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
+import * as Notifications from 'expo-notifications';
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
 import tw from "twrnc";
 
 interface LoginResponse {
@@ -71,15 +72,62 @@ const Login = () => {
         setError("Email dan password harus diisi");
         return;
       }
-      const success = await login(email, password);
-      if (success) {
+      
+      const result = await login(email, password);
+      if (result.success && result.userData) {
+        console.log("Login successful, now registering FCM token...");
+        
+        // Immediately register FCM token with the user data from login response
+        try {
+          const { forceUpdateFCMToken } = await import('../src/hooks/Auth/useFCMToken');
+          const fcmSuccess = await forceUpdateFCMToken(result.userData.user_id, result.userData.token);
+          if (fcmSuccess) {
+            console.log("FCM token registered successfully after login");
+          } else {
+            console.log("FCM token registration failed after login");
+          }
+        } catch (fcmError) {
+          console.error("Error registering FCM token after login:", fcmError);
+          Alert.alert('Warning', 'Login successful but FCM token registration failed');
+        }
+        
         setLoginSuccess(true);
       }
     } catch (err) {
       console.error("Login error:", err);
     }
   };
+  const sendTestNotification = async () => {
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: 'Test Notification',
+        body: 'This is a local notification!',
+        data: { screen: '/test' },
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+        seconds: 2,
+      },
+    });
+  };
 
+  const testFCMRegistration = async () => {
+    if (authState?.user_id && authState?.token) {
+      try {
+        const { forceUpdateFCMToken } = await import('../src/hooks/Auth/useFCMToken');
+        const success = await forceUpdateFCMToken(authState.user_id, authState.token);
+        if (success) {
+          Alert.alert('Success', 'FCM token registered successfully!');
+        } else {
+          Alert.alert('Error', 'FCM token registration failed');
+        }
+      } catch (error) {
+        Alert.alert('Error', 'Error registering FCM token');
+      }
+    } else {
+      Alert.alert('Error', 'User not authenticated');
+    }
+  };
   return (
     <View style={tw`flex-1 bg-white`}>
       {/* Top Header - 25% Height - White Background */}
@@ -168,13 +216,23 @@ const Login = () => {
               </Text>
             </Text>
           </View>
-          <View style={tw`justify-center items-center mt-10 mb-13`}>
+          <View style={tw`justify-center items-center mt-5 mb-8`}>
             <TouchableOpacity
               disabled={loading}
               onPress={handleLogin}
               style={tw`bg-blue-700 w-75 rounded-full py-4 mb-5  justify-center items-center ${loading ? 'opacity-50' : ''}`}>
               <Text style={tw`text-white font-bold`}>{loading ? 'Loading...' : 'Login'}</Text>
             </TouchableOpacity>
+            {/* <TouchableOpacity
+              onPress={sendTestNotification}
+              style={tw`bg-blue-700 w-75 rounded-full py-4 mb-5  justify-center items-center ${loading ? 'opacity-50' : ''}`}>
+              <Text style={tw`text-white font-bold`}>Send Test Notification</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={testFCMRegistration}
+              style={tw`bg-green-700 w-75 rounded-full py-4 mb-5  justify-center items-center ${loading ? 'opacity-50' : ''}`}>
+              <Text style={tw`text-white font-bold`}>Test FCM Registration</Text>
+            </TouchableOpacity> */}
             {/* <TouchableOpacity
               disabled={loading}
               onPress={() => console.log(`Test`)}
