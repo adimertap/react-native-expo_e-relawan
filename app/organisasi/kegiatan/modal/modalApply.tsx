@@ -150,9 +150,7 @@ export default function ModalApply({
               )}
             </View>
           )}
-          {(selectedSubs?.rating_for_user === null ||
-            (selectedSubs?.review_for_user === null &&
-              selectedSubs?.is_verified === "Y")) && (
+          {(selectedSubs?.rating_for_user === null && selectedSubs?.is_verified === "Y") && (
             <>
               <View style={tw`h-0.4 bg-gray-200 mt-1 mb-2`} />
               <Text style={tw`text-sm mb-3`}>

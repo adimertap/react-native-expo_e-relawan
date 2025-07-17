@@ -49,6 +49,7 @@ export default function DetailKegiatanScreen() {
     loading: loadingTolakKegiatan,
     error: errorTolakKegiatan
   } = useTolakKegiatan();
+  
   const [namaKegiatan, setNamaKegiatan] = useState<string>("");
   const [topic, setTopic] = useState<string>("");
   const [jenisKegiatan, setJenisKegiatan] = useState<string>("");
