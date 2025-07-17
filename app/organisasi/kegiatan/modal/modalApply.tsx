@@ -1,5 +1,8 @@
+import { API_URL } from "@/src/constants/env";
 import { useRatingRelawan } from "@/src/hooks/Organisasi/useRatingRelawan";
 import { Ionicons } from "@expo/vector-icons";
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 import { useState } from "react";
 import {
   Alert,
@@ -45,6 +48,16 @@ export default function ModalApply({
   //   return `${day}/${month}/${year}`;
   // };
 
+  // Helper to remove 'public/' or 'public\\' prefix if present and normalize slashes
+  const getCVUrl = (cvPath: string) => {
+    if (!cvPath) return "";
+    // Remove 'public/' or 'public\\' at the start
+    let cleanPath = cvPath.replace(/^public[\\\/]/, "");
+    // Replace all backslashes with forward slashes
+    cleanPath = cleanPath.replace(/\\/g, "/");
+    return cleanPath;
+  };
+
   const handleKirimReview = async () => {
     try {
       await ratingRelawan(selectedSubs?.subs_kegiatan_id, rating, review);
@@ -59,6 +72,47 @@ export default function ModalApply({
     } catch (error) {
       console.log(error);
       Alert.alert("Error", "Terjadi kesalahan saat mengirim review");
+    }
+  };
+
+  const handleDownloadCV = async () => {
+    if (!selectedSubs?.user_cv) {
+      Alert.alert("CV tidak tersedia");
+      return;
+    }
+    try {
+      // Construct the full URL to the CV file
+      const fileUrl = `${API_URL}/${getCVUrl(selectedSubs.user_cv)}`;
+      console.log(fileUrl);
+      // Get file extension
+      const fileName = getCVUrl(selectedSubs.user_cv).split('/').pop() || 'cv_downloaded.pdf';
+      console.log(fileName);
+      // Set download path
+      const downloadDir = FileSystem.documentDirectory; // For Expo
+      const localPath = `${downloadDir}${fileName}`;
+      console.log(localPath);
+      // For Android, request permission if needed (not required for app sandbox)
+      // Download the file
+      const downloadResumable = FileSystem.createDownloadResumable(
+        fileUrl,
+        localPath
+      );
+      console.log(downloadResumable);
+      const result = await downloadResumable.downloadAsync();
+      console.log(result);
+      if (result && result.uri) {
+        // Offer to share or move the file
+        if (await Sharing.isAvailableAsync()) {
+          await Sharing.shareAsync(result.uri);
+        } else {
+          Alert.alert('Success', `CV berhasil diunduh ke folder aplikasi: ${result.uri}`);
+        }
+      } else {
+        Alert.alert('Error', 'Gagal mengunduh CV');
+      }
+    } catch (error) {
+      console.log(error);
+      Alert.alert('Error', 'Gagal mengunduh CV');
     }
   };
 
@@ -114,9 +168,18 @@ export default function ModalApply({
                     </Text>
                   </View>
                   <View>
-                    <Text style={tw`text-blue-600 italic mb-2 mt-2`}>
-                      {selectedSubs.user_cv || "Tidak ada CV"}
-                    </Text>
+                    {selectedSubs.user_cv ? (
+                      <TouchableOpacity onPress={handleDownloadCV} style={tw`flex-row items-center`}>
+                        <Ionicons name="download-outline" size={20} color="#2563eb" />
+                        <Text style={tw`text-blue-600 italic mb-2 mt-2 ml-2 underline`}>
+                          Download CV
+                        </Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <Text style={tw`text-blue-600 italic mb-2 mt-2`}>
+                        Tidak ada CV
+                      </Text>
+                    )}
                   </View>
                 </>
               )}

@@ -117,7 +117,18 @@ export default function DaftarKegiatanRelawanScreen() {
           </TouchableOpacity>
         </View>
       </View>
-      <View style={tw`p-6 pt-1 mt-5`}>
+      <ScrollView
+        style={tw`flex-1`}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={tw`p-6 pt-1 mt-5 pb-20`}
+        refreshControl={
+          <RefreshControl
+            refreshing={loadingDetailKegiatan}
+            onRefresh={() => {}}
+            colors={["#2563eb"]}
+            tintColor="#2563eb"
+          />
+        }>
         <View style={tw`mt-2`}>
           <Text style={tw`text-black text-lg font-medium`}>{namaKegiatan}</Text>
           <Text style={tw`text-gray-500 text-sm mt-1`}>
@@ -125,84 +136,71 @@ export default function DaftarKegiatanRelawanScreen() {
           </Text>
         </View>
         <View style={tw`h-0.5 bg-gray-200 mt-5 mb-2`} />
-        <ScrollView
-          style={tw`mb-20`}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={tw`pb-20`}
-          refreshControl={
-            <RefreshControl
-              refreshing={loadingDetailKegiatan}
-              onRefresh={() => {}}
-              colors={["#2563eb"]}
-              tintColor="#2563eb"
+        <View>
+          <Text style={tw`text-red-500 italic font-sm mt-3 mb-6`}>
+            Silahkan isi formulir pendaftaran
+          </Text>
+          <View style={tw`w-full mb-5`}>
+            <Text style={tw`text-gray-600 font-sm mb-2 italic`}>
+              Mengapa Kami Harus Memilih Anda? (Maksimal 300 kata)
+            </Text>
+            <TextInput
+              style={tw`text-black bg-white py-4 px-4 rounded-lg w-full border border-gray-200 min-h-[200px]`}
+              placeholder="Isi disini..."
+              placeholderTextColor="gray"
+              autoCapitalize="none"
+              value={mengapaKamiHarusMemilihAnda}
+              onChangeText={setMengapaKamiHarusMemilihAnda}
+              multiline={true}
+              numberOfLines={5}
+              textAlignVertical="top"
+              maxLength={300}
+              keyboardType="default"
             />
-          }>
-          <View>
-            <Text style={tw`text-red-500 italic font-sm mt-3 mb-6`}>
-              Silahkan isi formulir pendaftaran
-            </Text>
-            <View style={tw`w-full mb-5`}>
-              <Text style={tw`text-gray-600 font-sm mb-2 italic`}>
-                Mengapa Kami Harus Memilih Anda? (Maksimal 300 kata)
-              </Text>
-              <TextInput
-                style={tw`text-black bg-white py-4 px-4 rounded-lg w-full border border-gray-200 min-h-[200px]`}
-                placeholder="Isi disini..."
-                placeholderTextColor="gray"
-                autoCapitalize="none"
-                value={mengapaKamiHarusMemilihAnda}
-                onChangeText={setMengapaKamiHarusMemilihAnda}
-                multiline={true}
-                numberOfLines={5}
-                textAlignVertical="top"
-                maxLength={300}
-                keyboardType="default"
-              />
-            </View>
-            <View style={tw`w-full mb-3 mt-3`}>
-              <Text style={tw`text-gray-600 text-sm italic mb-2 ml-1`}>
-                Upload CV (PDF/DOC/DOCX)
-              </Text>
-              <TouchableOpacity
-                style={tw`text-black bg-white py-4 px-4 rounded-full w-full border border-gray-200 flex-row items-center justify-center`}
-                onPress={pickFile}>
-                <Ionicons
-                  name="document-outline"
-                  size={24}
-                  color="gray"
-                  style={tw`mr-2`}
-                />
-                <Text style={tw`text-gray-500`}>
-                  {fileName ? fileName : "Select File"}
-                </Text>
-              </TouchableOpacity>
-              {fileName && (
-                <Text style={tw`text-gray-500 text-sm mt-2`}>
-                  Selected file: {fileName}
-                </Text>
-              )}
-            </View>
           </View>
-          <View style={tw`h-0.5 bg-gray-200 mt-5 mb-2`} />
-          {errorApplyKegiatan && (
-            <Text style={tw`text-red-500 text-sm mt-2 mb-2`}>
-              {errorApplyKegiatan}
+          <View style={tw`w-full mb-3 mt-3`}>
+            <Text style={tw`text-gray-600 text-sm italic mb-2 ml-1`}>
+              Upload CV (PDF/DOC/DOCX)
             </Text>
-          )}
-          <TouchableOpacity 
-            style={tw`bg-blue-600 rounded-full px-5 py-3 mt-5`}
-            onPress={handleSubmit}
-            disabled={loadingApplyKegiatan}>
-            {loadingApplyKegiatan ? (
-              <ActivityIndicator size="small" color="white" />
-            ) : (
-              <Text style={tw`text-white text-sm text-center font-bold`}>
-                Daftar!
+            <TouchableOpacity
+              style={tw`text-black bg-white py-4 px-4 rounded-full w-full border border-gray-200 flex-row items-center justify-center`}
+              onPress={pickFile}>
+              <Ionicons
+                name="document-outline"
+                size={24}
+                color="gray"
+                style={tw`mr-2`}
+              />
+              <Text style={tw`text-gray-500`}>
+                {fileName ? fileName : "Select File"}
+              </Text>
+            </TouchableOpacity>
+            {fileName && (
+              <Text style={tw`text-gray-500 text-sm mt-2`}>
+                Selected file: {fileName}
               </Text>
             )}
-          </TouchableOpacity>
-        </ScrollView>
-      </View>
+          </View>
+        </View>
+        <View style={tw`h-0.5 bg-gray-200 mt-5 mb-2`} />
+        {errorApplyKegiatan && (
+          <Text style={tw`text-red-500 text-sm mt-2 mb-2`}>
+            {errorApplyKegiatan}
+          </Text>
+        )}
+        <TouchableOpacity 
+          style={tw`bg-blue-600 rounded-full px-5 py-3 mt-5`}
+          onPress={handleSubmit}
+          disabled={loadingApplyKegiatan}>
+          {loadingApplyKegiatan ? (
+            <ActivityIndicator size="small" color="white" />
+          ) : (
+            <Text style={tw`text-white text-sm text-center font-bold`}>
+              Daftar!
+            </Text>
+          )}
+        </TouchableOpacity>
+      </ScrollView>
     </View>
   );
 }
