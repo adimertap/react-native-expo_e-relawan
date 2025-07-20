@@ -222,11 +222,15 @@ export default function AddKegiatanScreen() {
     } else {
       setStartDateError("");
       setStartDate(date.toISOString());
-      
       // If end date exists and is before start date, clear it
-      if (endDate && new Date(endDate) <= date) {
+      if (endDate && new Date(endDate) < date) {
         setEndDate("");
-        setEndDateError("Tanggal berakhir harus setelah tanggal mulai");
+        setEndDateError("Tanggal berakhir tidak boleh sebelum tanggal mulai");
+      }
+      // If deadline exists and is after new start date, clear it
+      if (deadline && new Date(deadline) > date) {
+        setDeadline("");
+        setDeadlineError("Deadline tidak boleh setelah tanggal mulai");
       }
     }
     setShowStartDatePicker(false);
@@ -239,8 +243,8 @@ export default function AddKegiatanScreen() {
     if (date < today) {
       setEndDateError("Tanggal tidak boleh di masa lalu");
       setEndDate("");
-    } else if (startDate && date <= new Date(startDate)) {
-      setEndDateError("Tanggal berakhir harus setelah tanggal mulai");
+    } else if (startDate && date < new Date(startDate)) {
+      setEndDateError("Tanggal berakhir tidak boleh sebelum tanggal mulai");
       setEndDate("");
     } else {
       setEndDateError("");
@@ -250,10 +254,11 @@ export default function AddKegiatanScreen() {
   };
 
   const handleDeadlineConfirm = (date: Date) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    if (date < today) {
-      setDeadlineError("Tanggal tidak boleh di masa lalu");
+    // const today = new Date();
+    // today.setHours(0, 0, 0, 0);
+    // Remove validation for deadline in the past
+    if (startDate && date > new Date(startDate)) {
+      setDeadlineError("Deadline tidak boleh setelah tanggal mulai");
       setDeadline("");
     } else {
       setDeadlineError("");
