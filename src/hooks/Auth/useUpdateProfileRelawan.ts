@@ -15,6 +15,8 @@ export const useUpdateProfileRelawan = () => {
     alamat?: string,
     kabupaten_id?: number,
     provinsi_id?: number,
+    gol_darah?: string,
+    tanggal_lahir?: string,
   ) => {
     try {
       setLoading(true);
@@ -29,6 +31,8 @@ export const useUpdateProfileRelawan = () => {
           alamat: alamat || "",
           kabupaten_id: kabupaten_id || "",
           provinsi_id: provinsi_id || "",
+          gol_darah: gol_darah || "",
+          tanggal_lahir: tanggal_lahir || "",
         },
         {
           headers: {

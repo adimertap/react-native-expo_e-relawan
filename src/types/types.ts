@@ -26,6 +26,8 @@ export interface UserType {
   photo?: string;
   apk_version?: string;
   avg_rating?: number;
+  gol_darah?: string;
+  umur?: number;
   created_at?: string;
   provinsi?: ProvinsiType;
   kabupaten?: KabupatenType;

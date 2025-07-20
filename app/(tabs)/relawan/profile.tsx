@@ -173,6 +173,20 @@ export default function ProfileRelawanScreen() {
           </View>
           <View style={tw`h-0.4 bg-gray-100 mt-2 mb-2`} />
           <View style={tw`flex-row items-center justify-between`}>
+            <Text style={tw`text-black text-sm font-medium`}>Gol. Darah</Text>
+            <Text style={tw`text-gray-500 text-sm italic`}>
+              {profile?.gol_darah || "-"}
+            </Text>
+          </View>
+          <View style={tw`h-0.4 bg-gray-100 mt-2 mb-2`} />
+          <View style={tw`flex-row items-center justify-between`}>
+            <Text style={tw`text-black text-sm font-medium`}>Tanggal Lahir</Text>
+            <Text style={tw`text-gray-500 text-sm italic`}>
+              {formatDate(profile?.tanggal_lahir || "")}
+            </Text>
+          </View>
+          <View style={tw`h-0.4 bg-gray-100 mt-2 mb-2`} />
+          <View style={tw`flex-row items-center justify-between`}>
             <Text style={tw`text-black text-sm font-medium`}>Alamat</Text>
             <Text style={tw`text-gray-500 text-sm italic`}>
               {profile?.alamat || "-"}
@@ -215,13 +229,13 @@ export default function ProfileRelawanScreen() {
               Change Password
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity
+          {/* <TouchableOpacity
              onPress={() => router.push("/relawan/profile/test-notif")}
             style={tw`bg-white border border-gray-400 rounded-lg p-2 mt-4 flex-row items-center justify-center`}>
             <Text style={tw`text-black text-sm font-medium`}>
               Test Notification
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           <TouchableOpacity
             onPress={handleLogout}
             style={tw`bg-white border border-red-500 rounded-lg p-2 mt-4 flex-row items-center justify-center`}>

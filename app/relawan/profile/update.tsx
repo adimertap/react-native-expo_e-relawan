@@ -1,3 +1,4 @@
+import DateTimePickerModal from "@/components/new/DateTimePickerModal";
 import DropdownComponent from "@/components/new/Dropdown";
 import { useAuthContext } from "@/src/contexts/AuthContext";
 import { useUpdateProfileRelawan } from "@/src/hooks/Auth/useUpdateProfileRelawan";
@@ -8,12 +9,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
-    Alert,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  Alert,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native";
 import tw from "twrnc";
 
@@ -31,6 +33,11 @@ export default function UpdateProfileRelawanScreen() {
   const [email, setEmail] = useState<string>("");
   const [phone, setPhone] = useState<string>("");
   const [alamat, setAlamat] = useState<string>("");
+  const [golDarah, setGolDarah] = useState<string>("");
+  const [tanggalLahir, setTanggalLahir] = useState<string>("");
+  
+  // Date picker state
+  const [showTanggalLahirPicker, setShowTanggalLahirPicker] = useState(false);
 
   // Province and district
   const { provinsi, loading: loadingProvinsi } = useHooksProvinsi();
@@ -45,6 +52,8 @@ export default function UpdateProfileRelawanScreen() {
   const [alamatError, setAlamatError] = useState("");
   const [provinsiError, setProvinsiError] = useState("");
   const [kabupatenError, setKabupatenError] = useState("");
+  const [golDarahError, setGolDarahError] = useState("");
+  const [tanggalLahirError, setTanggalLahirError] = useState("");
 
   // Validation functions
   const validateNama = (text: string) => {
@@ -99,6 +108,29 @@ export default function UpdateProfileRelawanScreen() {
     }
   };
 
+
+  const validateTanggalLahir = (text: string) => {
+    if (!text) {
+      setTanggalLahirError("Tanggal lahir wajib diisi");
+    } else {
+      setTanggalLahirError("");
+    }
+  };
+
+  const handleTanggalLahirConfirm = (date: Date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (date >= today) {
+      setTanggalLahirError("Tanggal lahir tidak boleh di masa depan");
+      setTanggalLahir("");
+    } else {
+      setTanggalLahirError("");
+      setTanggalLahir(date.toISOString());
+    }
+    setShowTanggalLahirPicker(false);
+  };
+
   // Set initial data from profile
   useEffect(() => {
     if (profile) {
@@ -108,6 +140,8 @@ export default function UpdateProfileRelawanScreen() {
       setAlamat(profile?.alamat || "");
       setSelectedProvinsi(profile?.provinsi_id || null);
       setSelectedKabupaten(profile?.kabupaten_id || null);
+      setGolDarah(profile?.gol_darah || "");
+      setTanggalLahir(profile?.tanggal_lahir || "");
     }
   }, [profile]);
 
@@ -119,9 +153,9 @@ export default function UpdateProfileRelawanScreen() {
     validateAlamat(alamat);
     validateProvinsi(selectedProvinsi);
     validateKabupaten(selectedKabupaten);
-
+    validateTanggalLahir(tanggalLahir);
     // Check if there are any errors
-    if (namaError || emailError || phoneError || alamatError || provinsiError || kabupatenError) {
+    if (namaError || emailError || phoneError || alamatError || provinsiError || kabupatenError || tanggalLahirError) {
       Alert.alert('Error', 'Mohon perbaiki kesalahan pada form');
       return;
     }
@@ -138,6 +172,8 @@ export default function UpdateProfileRelawanScreen() {
       alamat || "",
       selectedKabupaten || undefined,
       selectedProvinsi || undefined,
+      golDarah,
+      tanggalLahir
     );
 
     if (result.success) {
@@ -309,6 +345,34 @@ export default function UpdateProfileRelawanScreen() {
               <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>{alamatError}</Text>
             ) : null}
           </View>
+          <View style={tw`w-full mb-3`}>
+            <TextInput
+              style={tw`text-black bg-white py-4 px-4 rounded-full w-full border border-gray-200`}
+              placeholder="Gol. Darah"
+              placeholderTextColor="gray"
+              autoCapitalize="none"
+              value={golDarah}
+              onChangeText={(text) => {
+                setGolDarah(text);
+              }}
+            />
+            {golDarahError ? (
+              <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>{golDarahError}</Text>
+            ) : null}
+          </View>
+          <View style={tw`w-full mb-3`}>
+                         <Pressable
+               style={tw`text-black bg-white py-4 px-4 rounded-full w-full border border-gray-200`}
+               onPress={() => setShowTanggalLahirPicker(true)}
+             >
+               <Text style={tw`${tanggalLahir ? 'text-black' : 'text-gray-500'}`}>
+                 {tanggalLahir ? new Date(tanggalLahir).toLocaleDateString() : "Tanggal Lahir"}
+               </Text>
+             </Pressable>
+            {tanggalLahirError ? (
+              <Text style={tw`text-red-500 text-xs ml-4 mt-1`}>{tanggalLahirError}</Text>
+            ) : null}
+          </View>
           <View style={tw`w-full mb-15 mt-5`}>
             <TouchableOpacity 
               style={tw`bg-blue-600 py-4 px-4 rounded-full w-full ${updating ? 'opacity-50' : ''}`}
@@ -322,6 +386,12 @@ export default function UpdateProfileRelawanScreen() {
           </View>
         </ScrollView>
       </View>
+      <DateTimePickerModal
+        isVisible={showTanggalLahirPicker}
+        mode="date"
+        onConfirm={handleTanggalLahirConfirm}
+        onCancel={() => setShowTanggalLahirPicker(false)}
+      />
     </View>
   );
 }
